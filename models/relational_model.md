@@ -36,9 +36,11 @@
   - Tipo: NOT NULL
   - Tipo CHECK IN [DVD, CD, CD_ROM, VHS, Audiolibro]
 
-**Autor** (ID, Fecha_Nacimiento, Fecha_Muerte, Sexo, Edad, Nacionalidad, Nombre, Apellido_1, Apellido_2)
+**Autor** (ID, Fecha_Nacimiento, Fecha_Muerte, Sexo, Edad, Nombre, Apellido_1, Apellido_2)
   - ID: PRIMARY KEY
   - Fecha_Nacimiento <= FECHA_ACTUAL
+  - Fecha_Muerte <= FECHA_ACTUAL
+  - Fecha_Nacimiento <= Fecha_Muerte
   - Sexo CHECK IN [Masculino, Femenino, Otros]
   - Edad TRIGGER Fecha_Actual - Fecha_Nacimiento
   - Nombre: NOT NULL
