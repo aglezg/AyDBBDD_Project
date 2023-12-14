@@ -1,166 +1,120 @@
 /**
- * Table creations
+ * * * TABLE CREATIONS
  */
 
--- Table 'provincias'
-CREATE TABLE provincias (
+-- TABLE 'articulo'                                             -- Falta TRIGGER 'Prestación'
+CREATE TABLE articulo (
   id SERIAL PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL
+  titulo VARCHAR(50) NOT NULL,
+  subtitulo VARCHAR(100),
+  fchPublicacion DATE CHECK (fchPublicacion <= CURRENT_DATE),
+  portada BYTEA,
+  stock INT NOT NULL CHECK (stock >= 0),
+  disponible BOOLEAN GENERATED ALWAYS AS (stock > 0) STORED
 );
 
--- Table 'islas'
-CREATE TABLE islas (
-  id_provincia INT REFERENCES provincias(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  id SERIAL PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL,
-  latitud GEOGRAPHY(POINT) NOT NULL,
-  longitud GEOGRAPHY(POINT) NOT NULL,
+-- TABLE 'generoArticulo'
+CREATE TABLE generoArticulo (
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  genero VARCHAR(20) NOT NULL,
+  CHECK(genero IN (
+    'Novela', 
+    'Cuento', 
+    'Poesia', 
+    'Ensayo', 
+    'Biografia',
+    'Historia',
+    'Periodismo',
+    'Tragedia',
+    'Comedia',
+    'Fantasia',
+    'Distopia',
+    'Viaje-en-el-Tiempo',
+    'Misterio',
+    'Suspense',
+    'Detective',
+    'Thriller',
+    'Romance',
+    'Accion',
+    'Aventura',
+    'Comedia-Romantica',
+    'Drama',
+    'Melodrama',
+    'Ciencia-Ficcion',
+    'Terror',
+    'Infantil',
+    'Anime')
+  )
 );
 
--- Table 'direcciones'
-CREATE TABLE direcciones (
-  id_isla INT REFERENCES islas(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  id SERIAL PRIMARY KEY,
-  ciudad VARCHAR(50) NOT NULL,
-  codPostal CHAR(5) NOT NULL CHECK (codPostal ~ '^[0-9]+$'),
-  direccion1 text NOT NULL, 
-  direccion2 text
-);
 
--- Table 'bibliotecas'
-CREATE TABLE bibliotecas (
-  id SERIAL PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL,
-  sitioWeb text
-  -- emails
-  -- tlfns
-);
-
--- Table 'horarios'
-CREATE TABLE horarios (
-  id SERIAL PRIMARY KEY
-);
-
--- Table 'dias'
-CREATE TABLE dias (
-  id_horario INT REFERENCES horarios(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  nombre VARCHAR(9) CHECK (nombre IN ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo')),
-  PRIMARY KEY (id_horario, nombre)
-);
-
--- Table 'periodos'
-CREATE TABLE periodos (
-  id SERIAL PRIMARY KEY,
-  inicio TIME,
-  fin TIME
-  -- Dia asociado?
-);
-
--- Table 'usuarios'
-CREATE TABLE usuarios (
+-- TABLE 'autor'
+CREATE TABLE autor (
   id SERIAL PRIMARY KEY,
   nombre VARCHAR(50) NOT NULL,
   apellido1 VARCHAR(50) NOT NULL,
   apellido2 VARCHAR(50),
-  fchNacimiento DATE NOT NULL CHECK (fchNacimiento > '1900-01-01'),
-  sexo CHAR(1) CHECK (sexo in ('M', 'F'))
-  -- edad (generada automáticamente a partir de la fecha de nacimiento 'int')
-  -- fecha de registro (generado automáticamente a la hora de la creación 'timestamp')
-  -- teléfono y email
-  tipo VARCHAR(6) CHECK (tipo in ('Adulto', 'Menor')), -- Restricción para no rellenar campos si el tipo es uno u es otro?
-  dni CHAR(9) CHECK (dni ~ '\d{8}[A-Za-z]$'),
-  esEstudiante BOOLEAN
+  fchNacimiento DATE CHECK (fchNacimiento <= CURRENT_DATE),
+  fchMuerte DATE CHECK (fchMuerte <= CURRENT_DATE),
+  sexo CHAR(1) CHECK (sexo in ('M', 'F', 'O')),
+  edad SMALLINT CHECK (edad > 0)
+  CHECK (fchNacimiento <= fchMuerte)
 );
 
--- Table 'dniTutores'
-CREATE TABLE dniTutores ( -- Restricción no poder rellenar si el tipo es "Adulto"
-  id_usuario INT REFERENCES usuarios(id) ON UPDATE CASCADE ON DELETE CASCADE,
-  dniTutor CHAR(9) CHECK (dni ~ '\d{8}[A-Za-z]$')
-);
+-- CREATE FUNCTION 'actualiza_edad()'
+CREATE OR REPLACE FUNCTION actualiza_edad() RETURNS TRIGGER AS $$
+  BEGIN
+    IF NEW.fchNacimiento IS NOT NULL THEN
+      NEW.edad = DATE_PART('year', AGE(CURRENT_DATE, NEW.fchNacimiento));
+    ELSE
+      NEW.edad = NULL;
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
 
--- Table 'Tarjetas Socio'
-CREATE TABLE tarjetasSocio (
-  id SERIAL PRIMARY KEY,
-  color VARCHAR(50) CHECK (color in ('green', 'red', 'blue'))
-  -- id usuario al que pertenece
-);
+-- CREATE TRIGGER 'trigger_edad_autor()'
+CREATE TRIGGER trigger_edad_autor
+BEFORE INSERT OR UPDATE
+ON autor
+FOR EACH ROW
+EXECUTE FUNCTION actualiza_edad();
 
--- Table 'trabajadores'
-CREATE TABLE trabajadores (
-  dni CHAR(9) CHECK (dni ~ '\d{8}[A-Za-z]$') PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL,
-  apellido_1 VARCHAR(50) NOT NULL,
-  apellido_2 VARCHAR(50),
-  fchNacimiento DATE NOT NULL CHECK (fchNacimiento > '1900-01-01'),
-  sexo CHAR(1) CHECK (sexo in ('M', 'F')),
-  username VARCHAR(50) UNIQUE NOT NULL, -- Podemos complicarlo generandolo automáticamente
-  passwd VARCHAR(50) CHECK (
-    passwd ~ '[a-z]' AND
-    passwd ~ '[A-Z]' AND
-    passwd ~ '\d' AND
-    passwd ~ '[!@#$%^&*()_+{}|:"<>?~=\/`[\]'';,.]'
-  )
-  -- edad (generada automáticamente a partir de la fecha de nacimiento 'int')
-  -- fecha de registro (generado automáticamente a la hora de la creación 'timestamp')
-  -- teléfono y email
-  -- activo? (Generado a partir del checko de periodos en los que trabaja)
 
-);
-
--- Table 'articulos'
-CREATE TABLE articulos (
-  id SERIAL PRIMARY KEY,
-  titulo VARCHAR(50) NOT NULL,
-  subtitulo VARCHAR(100),
-  fchPublicacion DATE, -- Puede ser NULL: La biblia no tiene fecha de publicación
-  -- portada (link a imagen)
-  -- generos
-);
-
--- Table 'materialesAudiovisuales'
-CREATE TABLE materialesAudiovisuales (
-  id_articulo INT REFERENCES articulos(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  duracion INTERVAL NOT NULL, -- Checkear que no sea negativa
-  categoria VARCHAR(10) CHECK (categoria in ('Documental', 'Serie', 'Pelicula')),
-  tipo VARCHAR(10) CHECK (tipo in ('DVD', 'CD', 'CD-ROOM', 'VHS', 'Audiolibro'))
-  PRIMARY KEY (id_articulo)
-);
-
--- Table 'libros'
-CREATE TABLE libros (
-  id_articulo INT REFERENCES articulos(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  numPaginas INT NOT NULL CHECK (numPaginas > 0),
+-- TABLE 'libro'
+CREATE TABLE libro (
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE RESTRICT,
   editorial VARCHAR(50) NOT NULL,
+  numPaginas INT NOT NULL CHECK (numPaginas > 0),
+  estilo VARCHAR(9) NOT NULL CHECK (estilo IN ('Narrativo', 'Poetico', 'Dramatico', 'Epico', 'Lirico', 'Didactico', 'Satirico')),
   sinopsis TEXT,
-  estiloLiterario VARCHAR(9) CHECK (estiloLiterario IN ('Narrativo', 'Lirico', 'Teatral')),
-  PRIMARY KEY (id_articulo)
+  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  PRIMARY KEY (idArticulo)
 );
 
--- Table 'materialesPeriodicos'
-CREATE TABLE materialesPeriodicos (
-  id_articulo INT REFERENCES articulos(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  numPaginas INT NOT NULL CHECK (numPaginas > 0),
+
+-- Table 'materialPeriodico'
+CREATE TABLE materialPeriodico (
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE RESTRICT,
   editorial VARCHAR(50) NOT NULL,
-  tipo VARCHAR(9) CHECK (tipo IN ('Periodico', 'Revista')),
-  PRIMARY KEY (id_articulo)
+  numPaginas INT NOT NULL CHECK (numPaginas > 0),
+  tipo VARCHAR(9) NOT NULL CHECK (tipo IN ('Periodico', 'Revista')),
+  PRIMARY KEY (idArticulo)
 );
 
--- Table 'autores'
-CREATE TABLE autores (
-  id SERIAL PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL,
-  apellido_1 VARCHAR(50) NOT NULL,
-  apellido_2 VARCHAR(50),
-  nacionalidad VARCHAR(50), -- autores de nacionalidad desconocida, pueden tener varias nacionalidades?, Check in (español, ingles, frances...)?
-  sexo CHAR(1) CHECK (sexo in ('M', 'F')),
-  fchNacimiento DATE,
-  fchMuerte DATE
-  -- edad (generada automáticamente a partir de la fecha de nacimiento 'int')
+
+-- Table 'materialAudiovisual'
+CREATE TABLE materialAudiovisual (
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  duracion INTERVAL CHECK (duracion > '00:00:00'),
+  categoria VARCHAR(10) NOT NULL CHECK (categoria IN ('Pelicula', 'Documental', 'Serie')),
+  tipo VARCHAR(10) NOT NULL CHECK (tipo IN ('DVD', 'CD', 'CD_ROM', 'VHS', 'Audiolibro')),
+  PRIMARY KEY (idArticulo)
 );
 
--- Table 'inventarios'
-CREATE TABLE inventarios (
-  id SERIAL PRIMARY KEY,
-  stock INT CHECK (stock >= 0),
-  disponible BOOLEAN -- Disparador: stock == 0 <==> disponible == TRUE
-)
+
+-- Table 'autor_materialAudiovisual'
+CREATE TABLE autor_materialAudiovisual (
+  idMaterialAudiovisual INT REFERENCES materialAudiovisual(idArticulo) ON UPDATE CASCADE ON DELETE RESTRICT,
+  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE RESTRICT
+);
