@@ -270,3 +270,36 @@ CREATE TABLE Tarjeta_Socio (
   ID_Menor SERIAL,
   FOREIGN KEY (ID_Menor) REFERENCES Usuario_Menor(ID)
 );
+
+CREATE TABLE Provincia (
+    ID serial PRIMARY KEY,
+    Nombre_Provincia varchar(255) NOT NULL
+);
+
+CREATE TABLE Isla (
+    ID serial PRIMARY KEY,
+    Nombre_Isla varchar(255) NOT NULL,
+    Latitud numeric NOT NULL,
+    Longitud numeric NOT NULL,
+    ID_Provincia integer REFERENCES Provincia(ID)
+);
+
+// REVISAR DIRECCION
+
+CREATE TABLE Dirección (
+    ID serial PRIMARY KEY,
+    Ciudad varchar(255) NOT NULL,
+    CP varchar(10) NOT NULL,
+    Dirección1 varchar(255) NOT NULL,
+    Dirección2 varchar(255) NOT NULL,
+    DNI_Trabajador varchar(9) REFERENCES Trabajador(DNI),
+    CHECK (DNI_Trabajador ~ '\d{8}[A-Za-z]$'),
+    ID_Usuario integer REFERENCES Usuario(ID),
+    ID_Isla integer REFERENCES Isla(ID),
+    CHECK (
+        (DNI_Trabajador IS NOT NULL AND ID_Usuario IS NULL) OR
+        (DNI_Trabajador IS NULL AND ID_Usuario IS NOT NULL)
+    )
+);
+
+// FALTA PRESTACION HORARIO DIA PERIODO 
