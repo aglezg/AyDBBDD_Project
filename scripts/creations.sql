@@ -131,8 +131,9 @@ CREATE TABLE trabajador (
   sexo CHAR(1) CHECK (sexo IN ('M', 'F', 'O')),
   contrasenya VARCHAR(255) NOT NULL,
   edad SMALLINT CHECK (edad > 0),
+  -- Creo que lo de 'activo' puede hacerse con un trigger mejor y bueno, hay que hacer la tabla periodo antes
   -- activo BOOLEAN GENERATED ALWAYS AS (EXISTS (SELECT 1 FROM Periodo WHERE trabajador.dni = Periodo.dni AND Fecha_Fin IS NULL)) STORED,
-  fchHoraRegistro TIMESTAMP WITHOUT TIME ZONE NOT NULL -- Creo que puede hacerse con un trigger mejor
+  fchHoraRegistro TIMESTAMP WITHOUT TIME ZONE NOT NULL -- Creo que puede hacerse con un trigger mejor. En la práctica 5 el profe uso uno
   --CONSTRAINT chk_activo_fecha_hora CHECK (NOT (activo AND fchHoraRegistro IS NULL)),
   --CONSTRAINT chk_fchNacimiento_registro CHECK (fchNacimiento <= fchHoraRegistro)
 );
@@ -155,7 +156,7 @@ CREATE TABLE telefonoTrabajador (
 -- Table 'emailTrabajador'
 CREATE TABLE emailTrabajador (
   dniTrabajador CHAR(9) REFERENCES trabajador(dni) ON UPDATE CASCADE ON DELETE CASCADE,
-  email VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL
 );
 
 
@@ -183,7 +184,7 @@ EXECUTE FUNCTION actualiza_edad();
 -- Table 'tarjetaSocio'
 CREATE TABLE tarjetaSocio (
   id SERIAL PRIMARY KEY,
-  color VARCHAR(5) NOT NULL CHECK (color IN ('Azul', 'Rojo', 'Verde')),
+  color VARCHAR(5) NOT NULL CHECK (color IN ('Azul', 'Rojo', 'Verde'))
 );
 
 -- Table 'usuarioMenor'
@@ -196,7 +197,7 @@ CREATE TABLE usuarioMenor (
   fchHoraRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Creo que puede hacerse con un trigger mejor
   sexo CHAR(1) CHECK (sexo IN ('M', 'F', 'O')),
   edad SMALLINT CHECK (edad > 0),
-  idTarjetaSocio INT REFERENCES tarjetaSocio(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  idTarjetaSocio INT REFERENCES tarjetaSocio(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 -- CREATE TRIGGER 'trigger_edad_menor()'
@@ -219,7 +220,25 @@ CREATE TABLE telefonoUsuario (
   telefono VARCHAR(20) NOT NULL CHECK (LENGTH(telefono) = 9 AND telefono ~ '\d+')
 );
 
--- ^ Falta trigger (o bien uno o bien otro)
+-- CREATE FUNCTION 'un_idUsuario_debe_ser_nulo()'
+CREATE OR REPLACE FUNCTION un_idUsuario_debe_ser_nulo() RETURNS TRIGGER AS $$
+  BEGIN
+    IF NEW.idUsuarioAdulto IS NULL AND NEW.idUsuarioMenor IS NULL THEN
+      RAISE EXCEPTION 'idUsuarioAdulto OR idUsuarioMenor: ONE MUST HAVE A VALUE';
+    END IF;
+    IF NEW.idUsuarioAdulto IS NOT NULL AND NEW.idUsuarioMenor IS NOT NULL THEN
+      RAISE EXCEPTION 'idUsuarioAdulto plus OR idUsuarioMenor: ONE MUST HAVE A NULL VALUE';
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_telefono_usuario()'
+CREATE TRIGGER trigger_telefono_usuario
+BEFORE INSERT OR UPDATE 
+ON telefonoUsuario
+FOR EACH ROW 
+EXECUTE PROCEDURE un_idUsuario_debe_ser_nulo();
 
 -- Table 'emailUsuario'
 CREATE TABLE emailUsuario (
@@ -228,7 +247,12 @@ CREATE TABLE emailUsuario (
   email VARCHAR(50) NOT NULL
 );
 
--- ^ Falta trigger (o bien uno o bien otro)
+-- CREATE TRIGGER 'email()'
+CREATE TRIGGER trigger_email_usuario
+BEFORE INSERT OR UPDATE 
+ON emailUsuario
+FOR EACH ROW 
+EXECUTE PROCEDURE un_idUsuario_debe_ser_nulo();
 
 -- Table 'provincia'
 CREATE TABLE provincia (
@@ -241,12 +265,13 @@ CREATE TABLE provincia (
 CREATE TABLE Isla (
     id serial PRIMARY KEY,
     nombreIsla VARCHAR(255) NOT NULL,
-    ubicacion GEOGRAPHY(POINT) NOT NULL, -- Probar (me lo dio GPT) ==> VALUES ('Sample Island', ST_GeogFromText('POINT(12.345 67.890)'), 1);
+    latitud POINT NOT NULL,
+    longitud POINT NOT NULL,
     idProvincia INT REFERENCES provincia(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 
--- Table 'direccion' -- A lo mejor 'reorientar' la implementacion de direccion??
+-- Table 'direccion'
 CREATE TABLE direccion (
     id serial PRIMARY KEY,
     ciudad VARCHAR(255) NOT NULL,
@@ -256,5 +281,26 @@ CREATE TABLE direccion (
     dniTrabajador CHAR(9) REFERENCES trabajador(dni) ON UPDATE CASCADE ON DELETE CASCADE,
     idUsuarioAdulto INT REFERENCES usuarioAdulto(id) ON UPDATE CASCADE ON DELETE CASCADE,
     idUsuarioMenor INT REFERENCES usuarioMenor(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    idIsla INT REFERENCES isla(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    idIsla INT REFERENCES isla(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
+
+-- CREATE FUNCTION 'idUsuario_o_dniTrabajador_debe_ser_nulo()'
+CREATE OR REPLACE FUNCTION idUsuario_o_dniTrabajador_debe_ser_nulo() RETURNS TRIGGER AS $$
+  BEGIN
+    IF NOT (
+      (NEW.idUsuarioAdulto IS NULL AND NEW.idUsuarioMenor IS NULL AND NEW.dniTrabajador IS NOT NULL) OR
+      (NEW.idUsuarioAdulto IS NULL AND NEW.idUsuarioMenor IS NOT NULL AND NEW.dniTrabajador IS NULL) OR
+      (NEW.idUsuarioAdulto IS NOT NULL AND NEW.idUsuarioMenor IS NULL AND NEW.dniTrabajador IS NULL)
+    ) THEN
+      RAISE EXCEPTION 'Exactly one of idUsuarioAdulto, idUsuarioMenor or dniTrabajador must have a value, and the others must be NULL';
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_direccion_idUsuario_dniTrabajador()'
+CREATE TRIGGER trigger_direccion_idUsuario_dniTrabajador
+BEFORE INSERT OR UPDATE 
+ON direccion
+FOR EACH ROW 
+EXECUTE PROCEDURE idUsuario_o_dniTrabajador_debe_ser_nulo();
