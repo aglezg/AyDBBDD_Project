@@ -118,3 +118,155 @@ CREATE TABLE autor_materialAudiovisual (
   idMaterialAudiovisual INT REFERENCES materialAudiovisual(idArticulo) ON UPDATE CASCADE ON DELETE RESTRICT,
   idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
+
+CREATE TABLE Trabajador (
+  DNI VARCHAR(9) PRIMARY KEY CHECK (DNI ~ '\d{8}[A-Za-z]$'),
+  Nombre VARCHAR(50) NOT NULL,
+  Apellido_1 VARCHAR(50) NOT NULL,
+  Apellido_2 VARCHAR(50),
+  Fecha_Nacimiento DATE NOT NULL CHECK (Fecha_Nacimiento BETWEEN '1900-01-01' AND CURRENT_DATE),
+  Nombre_Usuario VARCHAR(50) NOT NULL UNIQUE,
+  Sexo CHAR(1) CHECK (Sexo IN ('M', 'F', 'O')),
+  Contraseña VARCHAR(255) NOT NULL,
+  Edad SMALLINT CHECK (Edad > 0),
+  Activo BOOLEAN GENERATED ALWAYS AS (EXISTS (SELECT 1 FROM Periodo WHERE Trabajador.DNI = Periodo.DNI AND Fecha_Fin IS NULL)) STORED,
+  Fecha_Hora_Registro TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  CONSTRAINT chk_activo_fecha_hora CHECK (NOT (Activo AND Fecha_Hora_Registro IS NULL)),
+  CONSTRAINT chk_fecha_nacimiento_registro CHECK (Fecha_Nacimiento <= Fecha_Hora_Registro)
+  
+);
+
+// REVISAR CONSTRAINTS UNA FORMA QUE LO SAQUE DE GPT Y ACTIVO 
+
+-- CREATE FUNCTION 'actualiza_edad_trabajador()'
+CREATE OR REPLACE FUNCTION actualiza_edad_trabajador() RETURNS TRIGGER AS $$
+  BEGIN
+    IF NEW.Fecha_Nacimiento IS NOT NULL THEN
+      NEW.Edad = DATE_PART('year', AGE(CURRENT_DATE, NEW.Fecha_Nacimiento));
+    ELSE
+      NEW.Edad = NULL;
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_edad_trabajador)'
+CREATE TRIGGER trigger_edad_trabajador
+BEFORE INSERT OR UPDATE
+ON Trabajador
+FOR EACH ROW
+EXECUTE FUNCTION actualiza_edad_trabajador();
+
+CREATE TABLE TeléfonoTrabajador (
+  DNI_Trabajador VARCHAR(9) REFERENCES Trabajador(DNI),
+  Teléfono VARCHAR(9) NOT NULL CHECK (Teléfono ~ '^\d{9}$'),
+  PRIMARY KEY (DNI_Trabajador, Teléfono)
+);
+
+CREATE TABLE EmailTrabajador (
+  DNI_Trabajador VARCHAR(9) REFERENCES Trabajador(DNI),
+  Email VARCHAR(255) NOT NULL,
+  PRIMARY KEY (DNI_Trabajador, Email)
+);
+
+CREATE TABLE Usuario_Adulto (
+  ID SERIAL PRIMARY KEY,
+  Nombre VARCHAR(50) NOT NULL,
+  Apellido_1 VARCHAR(50) NOT NULL,
+  Apellido_2 VARCHAR(50),
+  Fecha_Nacimiento DATE NOT NULL CHECK (Fecha_Nacimiento BETWEEN '1900-01-01' AND CURRENT_DATE),
+  Fecha_Hora_Registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  Sexo CHAR(1) CHECK (Sexo IN ('M', 'F', 'O')),
+  Edad SMALLINT CHECK (Edad > 0),
+  DNI VARCHAR(9) NOT NULL UNIQUE CHECK (DNI ~ '\d{8}[A-Za-z]$'),
+  Estudiante BOOLEAN NOT NULL
+);
+
+-- CREATE FUNCTION 'actualiza_edad_adulto()'
+CREATE OR REPLACE FUNCTION actualiza_edad_adulto() RETURNS TRIGGER AS $$
+  BEGIN
+    IF NEW.Fecha_Nacimiento IS NOT NULL THEN
+      NEW.Edad = DATE_PART('year', AGE(CURRENT_DATE, NEW.Fecha_Nacimiento));
+    ELSE
+      NEW.Edad = NULL;
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_edad_adulto)'
+CREATE TRIGGER trigger_edad_adulto
+BEFORE INSERT OR UPDATE
+ON Usuario_Adulto
+FOR EACH ROW
+EXECUTE FUNCTION actualiza_edad_adulto();
+
+// Edad SMALLINT GENERATED ALWAYS AS (EXTRACT(YEAR FROM AGE(CURRENT_DATE, Fecha_Nacimiento))) STORED,
+
+CREATE TABLE Usuario_Menor (
+  ID SERIAL PRIMARY KEY,
+  Nombre VARCHAR(50) NOT NULL,
+  Apellido_1 VARCHAR(50) NOT NULL,
+  Apellido_2 VARCHAR(50),
+  Fecha_Nacimiento DATE NOT NULL CHECK (Fecha_Nacimiento BETWEEN '1900-01-01' AND CURRENT_DATE),
+  Fecha_Hora_Registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  Sexo VARCHAR(10) CHECK (Sexo IN ('Masculino', 'Femenino', 'Otros')),
+  Edad SMALLINT CHECK (Edad > 0)
+);
+
+-- CREATE FUNCTION 'actualiza_edad_menor()'
+CREATE OR REPLACE FUNCTION actualiza_edad_menor() RETURNS TRIGGER AS $$
+  BEGIN
+    IF NEW.Fecha_Nacimiento IS NOT NULL THEN
+      NEW.Edad = DATE_PART('year', AGE(CURRENT_DATE, NEW.Fecha_Nacimiento));
+    ELSE
+      NEW.Edad = NULL;
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_edad_menor)'
+CREATE TRIGGER trigger_edad_menor
+BEFORE INSERT OR UPDATE
+ON Usuario_Adulto
+FOR EACH ROW
+EXECUTE FUNCTION actualiza_edad_menor();
+
+-- Tabla TutorUsuario_Menor
+CREATE TABLE TutorUsuario_Menor (
+  ID_Usuario_Menor SERIAL,
+  DNI_Tutor VARCHAR(20) NOT NULL,
+  PRIMARY KEY (ID_Usuario_Menor),
+  FOREIGN KEY (ID_Usuario_Menor) REFERENCES Usuario_Menor(ID),
+  CHECK (DNI_Tutor ~ '\d{8}[A-Za-z]$')
+);
+
+-- Tabla TeléfonoUsuario
+CREATE TABLE TeléfonoUsuario (
+  ID_Usuario_Adulto SERIAL,
+  ID_Usuario_Menor SERIAL,
+  Teléfono VARCHAR(20) NOT NULL,
+  PRIMARY KEY (ID_Usuario_Adulto, ID_Usuario_Menor),
+  FOREIGN KEY (ID_Usuario_Adulto) REFERENCES Usuario_Adulto(ID),
+  FOREIGN KEY (ID_Usuario_Menor) REFERENCES Usuario_Menor(ID),
+  CHECK (LENGTH(Teléfono) = 9 AND Teléfono ~ '\d+')
+);
+
+-- Tabla EmailUsuario
+CREATE TABLE EmailUsuario (
+  ID_Usuario_Adulto SERIAL,
+  ID_Usuario_Menor SERIAL,
+  Email VARCHAR(50) NOT NULL,
+  PRIMARY KEY (ID_Usuario_Adulto, ID_Usuario_Menor),
+  FOREIGN KEY (ID_Usuario_Adulto) REFERENCES Usuario_Adulto(ID),
+  FOREIGN KEY (ID_Usuario_Menor) REFERENCES Usuario_Menor(ID)
+);
+
+-- Tabla Tarjeta_Socio
+CREATE TABLE Tarjeta_Socio (
+  ID SERIAL PRIMARY KEY,
+  Color VARCHAR(10) NOT NULL CHECK (Color IN ('AZUL', 'ROJO', 'VERDE')),
+  ID_Menor SERIAL,
+  FOREIGN KEY (ID_Menor) REFERENCES Usuario_Menor(ID)
+);
