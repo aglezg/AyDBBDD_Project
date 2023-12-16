@@ -152,3 +152,98 @@ VALUES
   ('Daniel', 'Hernández', 'Sánchez', '1972-04-28', 'M', 30, '89012345H', false),
   ('Laura', 'Martínez', 'Fernández', '1968-07-15', 'F', 33, '90123456I', false),
   ('Alberto', 'Ramírez', 'Gómez', '1967-10-20', 'M', 34, '01234567J', true);
+
+-- Inserciones para usuarioMenor
+INSERT INTO usuarioMenor (nombre, apellido1, apellido2, fchNacimiento, sexo, edad, idTarjetaSocio)
+VALUES
+  ('Lucía', 'García', 'Martínez', '2010-05-12', 'F', 13, 1),
+  ('Juan', 'López', 'Gómez', '2012-09-18', 'M', 11, 2),
+  ('Marina', 'Fernández', 'Gutiérrez', '2011-03-25', 'F', 12, 3),
+  ('Pablo', 'Sánchez', 'Hernández', '2009-11-30', 'M', 14, 4),
+  ('Sofía', 'Martínez', 'Fernández', '2013-02-08', 'F', 9, 5),
+  ('Diego', 'Ramírez', 'Gómez', '2010-07-20', 'M', 12, 6),
+  ('Isabel', 'López', 'Hernández', '2014-04-28', 'F', 8, 7),
+  ('Manuel', 'Hernández', 'Sánchez', '2012-08-15', 'M', 10, 8),
+  ('Ana', 'Gómez', 'López', '2011-11-03', 'F', 11, 9),
+  ('David', 'Martínez', 'Fernández', '2013-06-22', 'M', 8, 10);
+
+-- Inserciones para tutorUsuarioMenor
+INSERT INTO tutorUsuarioMenor (idUsuarioMenor, dniTutor)
+VALUES
+  (1, '12345678A'),
+  (2, '87654321B'),
+  (3, '56789012C'),
+  (4, '90123456D'),
+  (5, '34567890E'),
+  (6, '67890123F'),
+  (7, '23456789G'),
+  (8, '78901234H'),
+  (9, '45678901I'),
+  (10, '01234567J');
+
+-- Inserciones para telefonoUsuario
+INSERT INTO telefonoUsuario (idUsuarioAdulto, idUsuarioMenor, telefono)
+VALUES
+  (1, 1, '123456789'),
+  (2, 2, '987654321'),
+  (3, 3, '567890123'),
+  (4, 4, '901234567'),
+  (5, 5, '345678901'),
+  (6, 6, '678901234'),
+  (7, 7, '234567890'),
+  (8, 8, '789012345'),
+  (9, 9, '456789012'),
+  (10, 10, '012345678');
+
+-- Inserciones para emailUsuario
+INSERT INTO emailUsuario (idUsuarioAdulto, idUsuarioMenor, email)
+VALUES
+  (1, 1, 'usuario1@dominio.com'),
+  (2, 2, 'usuario2@dominio.com'),
+  (3, 3, 'usuario3@dominio.com'),
+  (4, 4, 'usuario4@dominio.com'),
+  (5, 5, 'usuario5@dominio.com'),
+  (6, 6, 'usuario6@dominio.com'),
+  (7, 7, 'usuario7@dominio.com'),
+  (8, 8, 'usuario8@dominio.com'),
+  (9, 9, 'usuario9@dominio.com'),
+  (10, 10, 'usuario10@dominio.com');
+
+-- Inserciones para provincia
+INSERT INTO provincia (nombreProvincia) VALUES
+  ('Provincia1'),
+  ('Provincia2'),
+  ('Provincia3'),
+  ('Provincia4'),
+  ('Provincia5'),
+  ('Provincia6'),
+  ('Provincia7'),
+  ('Provincia8'),
+  ('Provincia9'),
+  ('Provincia10');
+
+-- Inserciones para isla
+INSERT INTO isla (nombreIsla, latitud, longitud, idProvincia) VALUES
+  ('Isla1', POINT(28.123, -16.987), POINT(28.123, -16.987), 1),
+  ('Isla2', POINT(27.456, -15.789), POINT(27.456, -15.789), 2),
+  ('Isla3', POINT(26.789, -14.567), POINT(26.789, -14.567), 3),
+  ('Isla4', POINT(25.012, -13.345), POINT(25.012, -13.345), 4),
+  ('Isla5', POINT(24.345, -12.123), POINT(24.345, -12.123), 5),
+  ('Isla6', POINT(23.678, -10.901), POINT(23.678, -10.901), 6),
+  ('Isla7', POINT(22.901, -9.789), POINT(22.901, -9.789), 7),
+  ('Isla8', POINT(22.234, -8.567), POINT(22.234, -8.567), 8),
+  ('Isla9', POINT(21.567, -7.345), POINT(21.567, -7.345), 9),
+  ('Isla10', POINT(20.890, -6.123), POINT(20.890, -6.123), 10);
+
+-- Inserciones para direccion
+INSERT INTO direccion (ciudad, codigoPostal, direccion1, dniTrabajador, idUsuarioAdulto, idUsuarioMenor, idIsla) VALUES
+  ('Ciudad1', '12345', 'Direccion1', '12345678A', 1, 1, 1),
+  ('Ciudad2', '23456', 'Direccion2', '23456789B', 2, 2, 2),
+  ('Ciudad3', '34567', 'Direccion3', '34567890C', 3, 3, 3),
+  ('Ciudad4', '45678', 'Direccion4', '45678901D', 4, 4, 4),
+  ('Ciudad5', '56789', 'Direccion5', '56789012E', 5, 5, 5),
+  ('Ciudad6', '67890', 'Direccion6', '67890123F', 6, 6, 6),
+  ('Ciudad7', '78901', 'Direccion7', '78901234G', 7, 7, 7),
+  ('Ciudad8', '89012', 'Direccion8', '89012345H', 8, 8, 8),
+  ('Ciudad9', '90123', 'Direccion9', '90123456I', 9, 9, 9),
+  ('Ciudad10', '01234', 'Direccion10', '01234567J', 10, 10, 10);
