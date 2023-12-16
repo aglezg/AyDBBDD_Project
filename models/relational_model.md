@@ -100,7 +100,7 @@
 - DNI CHECK (DNI ~ '\d{8}[A-Za-z]$')
 - Estudiante: NOT NULL
 
-**Usuario_Menor** (ID, Nombre, Apellido_1, Apellido_2, Fecha_Nacimiento, Fecha_Hora_Registro, Sexo, Edad)
+**Usuario_Menor** (ID, Nombre, Apellido_1, Apellido_2, Fecha_Nacimiento, Fecha_Hora_Registro, Sexo, Edad, ID_Tarjeta_Socio)
 
 - ID: PRIMARY KEY
 - Nombre: NOT NULL
@@ -111,6 +111,7 @@
 - Fecha_Hora_Registro TRIGGER Fecha_Hora_Registro = Fecha_Hora_Inserción
 - Sexo CHECK IN [Masculino, Femenino, Otros]
 - Edad TRIGGER Fecha_Actual - Fecha_Nacimiento
+- ID_Tarjeta_Socio: FOREIGN KEY de Tarjeta_Socio(ID)
 
 **TutorUsuario_Menor** (ID_Usuario_Menor, DNI_Tutor)
 
@@ -131,12 +132,11 @@
 - ID_Usuario_Menor: FOREIGN KEY de Usuario_Menor(ID)
 - Email: NOT NULL
 
-**Tarjeta_Socio** (ID, Color, ID_Menor)
+**Tarjeta_Socio** (ID, Color)
 
 - ID: PRIMARY KEY
 - Color: NOT NULL
 - Color CHECK IN [AZUL, ROJO, VERDE]
-- ID_Menor: FOREIGN KEY de Usuario_Menor(ID)
 
 **Horario** (ID, ID_Trabajador, Periodo_Inicio, Periodo_Fin)
 
