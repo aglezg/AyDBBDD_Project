@@ -30,7 +30,19 @@ VALUES
    1),
   ('El Misterio de la Isla Perdida', 'Una novela de intriga y suspense', '2023-03-10',
    E'\\x89504e470d0a1a0a0000',
-   1);
+   1),
+  ('Noticias del Día', 'Resumen de los eventos actuales', '2023-11-18', E'\\x89504e470d0a1a0a0096', 1),
+  ('El Periódico Semanal', 'Recopilación de noticias destacadas', '2023-11-17', E'\\x89504e470d0a1a0a0025', 1),
+  ('Economía Hoy', 'Análisis financiero y económico', '2023-11-16', E'\\xABCDE', 120),
+  ('Cultura y Espectáculos', 'Lo último en arte y entretenimiento', '2023-11-15', E'\\x89504e470d0a1a0a0034', 1),
+  ('Ciencia y Tecnología', 'Avances y descubrimientos científicos', '2023-11-14', E'\\x89504e470d0a1a0a0023', 1),
+  ('Revista de Ciencia', 'Explorando los avances científicos', '2023-11-18', E'\\x89504e470d0a1a0a0043', 80),
+  ('Revista de Moda', 'Tendencias y estilos de la temporada', '2023-11-17', E'\\x89504e470d0a3a0a0023', 100),
+  ('Revista de Viajes', 'Destinos increíbles y consejos de viaje', '2023-11-16', E'\\x89504e470d0a1a0a0043', 120),
+  ('Revista de Tecnología', 'Lo último en gadgets y novedades tecnológicas', '2023-11-15', E'\\x89504e470d0a1a0a0021', 90),
+  ('Revista de Cine', 'Críticas y novedades del mundo del cine', '2023-11-14', E'\\x89504e470d0a1a0a0022', 70);
+
+
 
 -- Inserciones para la tabla 'generoArticulo'
 INSERT INTO generoArticulo (idArticulo, genero) 
@@ -51,18 +63,18 @@ VALUES
   (16, 'Distopia');
 
 -- Inserciones para la tabla 'autor'
-INSERT INTO autor (nombre, apellido1, apellido2, fchNacimiento, fchMuerte, sexo, edad)
+INSERT INTO autor (nombre, apellido1, apellido2, fchNacimiento, fchMuerte, sexo)
 VALUES 
-  ('Juan', 'Pérez', 'González', '1980-05-15', NULL, 'M', NULL),
-  ('María', 'López', 'Martínez', '1992-11-28', NULL, 'F', NULL),
-  ('Carlos', 'Ruiz', 'Fernández', '1975-07-10', '2022-06-30', 'M', NULL),
-  ('Ana', 'García', 'Sánchez', '1988-03-20', NULL, 'F', NULL),
-  ('Pedro', 'Rodríguez', 'Vega', '1960-09-05', '2018-12-18', 'M', NULL),
-  ('Isabel', 'Fernández', 'Hernández', '1978-12-12', NULL, 'F', NULL),
-  ('Manuel', 'Martínez', 'Díaz', '1985-06-03', NULL, 'M', NULL),
-  ('Laura', 'Gómez', 'Jiménez', '1915-02-17', '2001-12-18', 'F', NULL),
-  ('Javier', 'Serrano', 'Muñoz', '1972-08-22', NULL, 'M', NULL),
-  ('Elena', 'Moreno', 'Alonso', '1983-04-08', NULL, 'F', NULL);
+  ('Juan', 'Pérez', 'González', '1980-05-15', NULL, 'M'),
+  ('María', 'López', 'Martínez', '1992-11-28', NULL, 'F'),
+  ('Carlos', 'Ruiz', 'Fernández', '1975-07-10', '2022-06-30', 'M'),
+  ('Ana', 'García', 'Sánchez', '1988-03-20', NULL, 'F'),
+  ('Pedro', 'Rodríguez', 'Vega', '1960-09-05', '2018-12-18', 'M'),
+  ('Isabel', 'Fernández', 'Hernández', '1978-12-12', NULL, 'F'),
+  ('Manuel', 'Martínez', 'Díaz', '1985-06-03', NULL, 'M'),
+  ('Laura', 'Gómez', 'Jiménez', '1915-02-17', '2001-12-18', 'F'),
+  ('Javier', 'Serrano', 'Muñoz', '1972-08-22', NULL, 'M'),
+  ('Elena', 'Moreno', 'Alonso', '1983-04-08', NULL, 'F');
 
 
 -- Inserciones para la tabla 'libro'
@@ -247,3 +259,16 @@ INSERT INTO direccion (ciudad, codigoPostal, direccion1, dniTrabajador, idUsuari
   ('Ciudad8', '89012', 'Direccion8', '89012345H', 8, 8, 8),
   ('Ciudad9', '90123', 'Direccion9', '90123456I', 9, 9, 9),
   ('Ciudad10', '01234', 'Direccion10', '01234567J', 10, 10, 10);
+
+INSERT INTO prestacion (idArticulo, dniTrabajador, idUsuarioAdulto, idUsuarioMenor, fchInicio, fchFin, fchDevolucion)
+VALUES 
+  (1, '12345678A', 1, NULL, '2022-10-01', '2022-10-15', NULL),
+  (2, '87654321B', NULL, 2, '2022-09-15', '2022-09-30', NULL),
+  (3, '11111111C', NULL, 3, '2022-08-01', '2022-08-15', NULL),
+  (4, '22222222D', 4, NULL, '2022-11-01', '2022-11-15', NULL),
+  (5, '33333333E', 5, NULL, '2022-12-01', '2022-12-15', NULL),
+  (6, '44444444F', NULL, 6, '2022-07-01', '2022-07-15', NULL),
+  (7, '55555555G', 7, NULL, '2022-06-01', '2022-06-15', NULL),
+  (8, '66666666H', NULL, 8, '2022-05-01', '2022-05-15', NULL),
+  (9, '77777777I', 9, NULL, '2022-04-01', '2022-04-15', NULL),
+  (10, '88888888J', NULL, 10, '2022-03-01', '2022-03-15', NULL);

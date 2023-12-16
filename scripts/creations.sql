@@ -256,14 +256,14 @@ EXECUTE PROCEDURE un_idUsuario_debe_ser_nulo();
 
 -- Table 'provincia'
 CREATE TABLE provincia (
-    id serial PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     nombreProvincia VARCHAR(255) NOT NULL
 );
 
 
 -- Table 'isla'
 CREATE TABLE Isla (
-    id serial PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     nombreIsla VARCHAR(255) NOT NULL,
     latitud POINT NOT NULL,
     longitud POINT NOT NULL,
@@ -273,7 +273,7 @@ CREATE TABLE Isla (
 
 -- Table 'direccion'
 CREATE TABLE direccion (
-    id serial PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     ciudad VARCHAR(255) NOT NULL,
     codigoPostal CHAR(5) NOT NULL CHECK (codigoPostal ~ '\d+'),
     direccion1 TEXT NOT NULL,
@@ -304,3 +304,147 @@ BEFORE INSERT OR UPDATE
 ON direccion
 FOR EACH ROW 
 EXECUTE PROCEDURE idUsuario_o_dniTrabajador_debe_ser_nulo();
+
+
+-- Table 'Horario'
+CREATE TABLE horario (
+  id SERIAL PRIMARY KEY,
+  dniTrabajador CHAR(9) REFERENCES trabajador(dni) ON UPDATE CASCADE ON DELETE SET NULL,
+  fchInicio DATE NOT NULL,
+  fchFin DATE,
+  CHECK (fchInicio <= fchFin)
+);
+
+-- CREATE FUNCTION 'check_solapamiento_periodos()'
+CREATE OR REPLACE FUNCTION check_solapamiento_periodos()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM horario
+        WHERE dniTrabajador = NEW.dniTrabajador
+        AND (NEW.fchInicio, NEW.fchFin) OVERLAPS (fchInicio, fchFin)
+    ) THEN
+        RAISE EXCEPTION 'Started date and end date overlaps for the same employer';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'periodos_no_se_solapan_para_un_mismo_trabajador()'
+CREATE TRIGGER periodos_no_se_solapan_para_un_mismo_trabajador
+BEFORE INSERT OR UPDATE
+ON horario
+FOR EACH ROW
+EXECUTE PROCEDURE check_solapamiento_periodos();
+
+-- CREATE FUNCTION 'fchInicio_mayor_igual_fchRegistro()'
+CREATE OR REPLACE FUNCTION fchInicio_mayor_igual_fchRegistro() RETURNS TRIGGER AS $$
+  BEGIN
+    IF (
+      NEW.fchInicio < (SELECT fchHoraRegistro from trabajador WHERE dni = NEW.dniTrabajador)
+    ) THEN
+      RAISE EXCEPTION 'Init Date must be greater or equal than worker register date';
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'fchInicio_mayor_igual_fchRegistro()'
+CREATE TRIGGER fchInicio_mayor_igual_fchRegistro
+BEFORE INSERT OR UPDATE 
+ON horario
+FOR EACH ROW 
+EXECUTE PROCEDURE fchInicio_mayor_igual_fchRegistro();
+
+
+-- Table 'dia'
+CREATE TABLE dia (
+  idHorario INT REFERENCES horario(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  nombre VARCHAR(9) NOT NULL CHECK (nombre in ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo')),
+  PRIMARY KEY (idHorario, nombre)
+)
+
+-- Table 'periodo'
+CREATE TABLE periodo (
+  id SERIAL PRIMARY KEY,
+  horaInicio TIME NOT NULL,
+  horaFin TIME NOT NULL,
+  idHorario INT,
+  nombreDia VARCHAR(9),
+  FOREIGN KEY (idHorario, nombreDia) REFERENCES dia(idHorario, nombre) ON UPDATE CASCADE ON DELETE CASCADE,
+  CHECK (horaInicio <= horaFin)
+);
+
+-- Table 'prestacion'
+CREATE TABLE prestacion (
+  id SERIAL PRIMARY KEY,
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  dniTrabajador CHAR(9) REFERENCES trabajador(dni) ON UPDATE CASCADE ON DELETE SET NULL,
+  idUsuarioAdulto INT REFERENCES usuarioAdulto(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  idUsuarioMenor INT REFERENCES usuarioMenor(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  fchInicio DATE NULL DEFAULT CURRENT_DATE,
+  fchFin DATE NULL,
+  fchDevolucion DATE,
+  vigente BOOLEAN GENERATED ALWAYS AS (fchDevolucion IS NULL) STORED,
+  CHECK (fchInicio <= fchFin)
+);
+
+-- CREATE FUNCTION 'set_fchFin_default()'
+CREATE OR REPLACE FUNCTION set_fchFin_default()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.fchFin = NEW.fchInicio + INTERVAL '14 days';
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'set_fchFin_default'
+CREATE TRIGGER set_fchFin_default
+BEFORE INSERT ON prestacion
+FOR EACH ROW EXECUTE FUNCTION set_fchFin_default();
+
+-- CREATE TRIGGER 'trigger_prestacion_usuario()'
+CREATE TRIGGER trigger_prestacion_usuario
+BEFORE INSERT OR UPDATE 
+ON prestacion
+FOR EACH ROW 
+EXECUTE PROCEDURE un_idUsuario_debe_ser_nulo();
+
+-- CREATE FUNCTION 'numero_prestaciones_menor_o_igual_a_5_o_7()'
+CREATE OR REPLACE FUNCTION numero_prestaciones_menor_o_igual_a_5_o_7() RETURNS TRIGGER AS $$
+  BEGIN
+    IF (NEW.idUsuarioAdulto IS NOT NULL AND NEW.idUsuarioMenor IS NULL) THEN
+      IF (
+          TRUE = (SELECT estudiante FROM usuarioAdulto WHERE idUsuarioAdulto = NEW.idUsuarioAdulto)
+        ) THEN
+          IF (
+            7 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
+          ) THEN
+          RAISE EXCEPTION 'Number of lendings for a adult student user cant be greater than 7';
+          END IF;
+      ELSE
+        IF (
+            5 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
+          ) THEN
+          RAISE EXCEPTION 'Number of lendings for a adult non student user cant be greater than 5';
+          END IF;
+      END IF;
+    END IF;
+    IF (NEW.idUsuarioAdulto IS NULL AND NEW.idUsuarioMenor IS NOT NULL) THEN
+      IF (
+        7 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
+      ) THEN
+        RAISE EXCEPTION 'Number of lendings for a minor age user cant be greater than 7';
+      END IF;
+    END IF;
+    
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER comprobacion_numero_prestaciones
+BEFORE INSERT OR UPDATE 
+ON horario
+FOR EACH ROW 
+EXECUTE PROCEDURE numero_prestaciones_menor_o_igual_a_5_o_7();
