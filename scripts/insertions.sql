@@ -1,17 +1,28 @@
-/**
 -- Inserciones para la tabla 'articulo'
 INSERT INTO articulo (titulo, subtitulo, fchPublicacion, portada, stock) 
 VALUES 
-  ('Articulo 1', 'Subtitulo 1', '2023-11-18', E'\\x012345', true),
-  ('Articulo 2', 'Subtitulo 2', '2022-11-17', E'\\x567890', true),
-  ('Articulo 3', 'Subtitulo 3', '2014-11-16', E'\\xABCDE', true),
-  ('Articulo 4', 'Subtitulo 4', '2019-11-15', E'\\xF1234', true),
-  ('Articulo 5', 'Subtitulo 5', '2020-11-14', E'\\x56789', true),
-  ('Articulo 6', 'Subtitulo 6', '2020-11-13', E'\\xABCDE', true),
-  ('Articulo 7', 'Subtitulo 7', '2023-11-12', E'\\xF1234', false),
-  ('Articulo 8', 'Subtitulo 8', '2023-11-11', E'\\x56789', false),
-  ('Articulo 9', 'Subtitulo 9', '2011-11-10', E'\\xABCDE', false),
-  ('Articulo 10', 'Subtitulo 10', '2010-11-09', E'\\xF1234', false),
+  ('Historia del Arte Moderno', 'Una exploración de las corrientes artísticas del siglo XX', '2022-10-15',
+   E'\\x89504e470d0a1a0a0000',
+   1),
+  ('Recetas de Cocina Tradicional', 'Platos caseros y deliciosos', '2021-08-25',
+   E'\\x89504e470d0a1a0a0000',
+   1),
+  ('Viaje al Centro de la Tierra', 'Una emocionante novela de aventuras', '2020-05-12',
+   E'\\x89504e470d0a1a0a0000',
+   1),
+  ('Guía Práctica de Programación', 'Conceptos esenciales para aprender a programar', '2023-01-30',
+   E'\\x89504e470d0a1a0a0000',
+   1);
+  ('Articulo 1', 'Subtitulo 1', '2023-11-18', E'\\x0123452', 1),
+  ('Articulo 2', 'Subtitulo 2', '2022-11-17', E'\\x5678904', 1),
+  ('Articulo 3', 'Subtitulo 3', '2014-11-16', E'\\xABCDE5', 1),
+  ('Articulo 4', 'Subtitulo 4', '2019-11-15', E'\\xF12342', 1),
+  ('Articulo 5', 'Subtitulo 5', '2020-11-14', E'\\x567891', 1),
+  ('Articulo 6', 'Subtitulo 6', '2020-11-13', E'\\xABCDE3', 1),
+  ('Articulo 7', 'Subtitulo 7', '2023-11-12', E'\\xF12342', 0),
+  ('Articulo 8', 'Subtitulo 8', '2023-11-11', E'\\x567891', 0),
+  ('Articulo 9', 'Subtitulo 9', '2011-11-10', E'\\xABCDE4', 0),
+  ('Articulo 10', 'Subtitulo 10', '2010-11-09', E'\\xF12334', 0);
 
 -- Inserciones para la tabla 'generoArticulo'
 INSERT INTO generoArticulo (idArticulo, genero) 
@@ -93,4 +104,4 @@ VALUES
   (8, 4),
   (9, 5),
   (10, 6);
-*/
+
