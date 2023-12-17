@@ -5,6 +5,7 @@
 -- TABLE 'articulo'
 CREATE TABLE articulo (
   id SERIAL PRIMARY KEY,
+  tipo VARCHAR(19) CHECK (tipo in ('libro', 'materialPeriodico', 'materialAudiovisual')),
   titulo VARCHAR(50) NOT NULL,
   subtitulo VARCHAR(100),
   fchPublicacion DATE CHECK (fchPublicacion <= CURRENT_DATE),
@@ -92,6 +93,23 @@ CREATE TABLE libro (
   PRIMARY KEY (idArticulo)
 );
 
+-- CREATE FUNCTION 'check_tipo_libro()'
+CREATE OR REPLACE FUNCTION check_tipo_libro() RETURNS TRIGGER AS $$
+  BEGIN
+    IF (SELECT tipo FROM articulo WHERE id = NEW.idArticulo) != 'libro' THEN
+      RAISE EXCEPTION 'article to insert in table book has no type book';
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_check_tipo_libro'
+CREATE TRIGGER trigger_check_tipo_libro
+BEFORE INSERT OR UPDATE
+ON libro
+FOR EACH ROW
+EXECUTE FUNCTION check_tipo_libro();
+
 
 -- Table 'materialPeriodico'
 CREATE TABLE materialPeriodico (
@@ -102,6 +120,23 @@ CREATE TABLE materialPeriodico (
   PRIMARY KEY (idArticulo)
 );
 
+-- CREATE FUNCTION 'check_tipo_materialPeriodico()'
+CREATE OR REPLACE FUNCTION check_tipo_materialPeriodico() RETURNS TRIGGER AS $$
+  BEGIN
+    IF (SELECT tipo FROM articulo WHERE id = NEW.idArticulo) != 'materialPeriodico' THEN
+      RAISE EXCEPTION 'article to insert in table newspaper has no type newspaper';
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_check_tipo_materialPeriodico'
+CREATE TRIGGER trigger_check_tipo_materialPeriodico
+BEFORE INSERT OR UPDATE
+ON materialPeriodico
+FOR EACH ROW
+EXECUTE FUNCTION check_tipo_materialPeriodico();
+
 
 -- Table 'materialAudiovisual'
 CREATE TABLE materialAudiovisual (
@@ -111,6 +146,23 @@ CREATE TABLE materialAudiovisual (
   tipo VARCHAR(10) NOT NULL CHECK (tipo IN ('DVD', 'CD', 'CD_ROM', 'VHS', 'Audiolibro')),
   PRIMARY KEY (idArticulo)
 );
+
+-- CREATE FUNCTION 'check_tipo_materialAudiovisual()'
+CREATE OR REPLACE FUNCTION check_tipo_materialAudiovisual() RETURNS TRIGGER AS $$
+  BEGIN
+    IF (SELECT tipo FROM articulo WHERE id = NEW.idArticulo) != 'materialAudiovisual' THEN
+      RAISE EXCEPTION 'article to insert in table audiovisual has no type audiovisual';
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_check_tipo_materialAudiovisual'
+CREATE TRIGGER trigger_check_tipo_materialAudiovisual
+BEFORE INSERT OR UPDATE
+ON materialAudiovisual
+FOR EACH ROW
+EXECUTE FUNCTION check_tipo_materialAudiovisual();
 
 
 -- Table 'autor_materialAudiovisual'
