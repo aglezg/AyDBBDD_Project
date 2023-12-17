@@ -46,7 +46,8 @@ CREATE TABLE generoArticulo (
     'Infantil',
     'Informativo',
     'Anime')
-  )
+  ),
+  PRIMARY KEY (idArticulo,genero)
 );
 
 
@@ -169,7 +170,8 @@ EXECUTE FUNCTION check_tipo_materialAudiovisual();
 -- Table 'autor_materialAudiovisual'
 CREATE TABLE autor_materialAudiovisual (
   idMaterialAudiovisual INT REFERENCES materialAudiovisual(idArticulo) ON UPDATE CASCADE ON DELETE CASCADE,
-  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE RESTRICT
+  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  PRIMARY KEY (idMaterialAudiovisual, idAutor)
 );
 
 
@@ -184,10 +186,9 @@ CREATE TABLE trabajador (
   sexo CHAR(1) CHECK (sexo IN ('M', 'F', 'O')),
   contrasena VARCHAR(255) NOT NULL,
   edad SMALLINT CHECK (edad > 0),
-  fchHoraRegistro TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-  activo BOOLEAN NOT NULL  DEFAULT FALSE
-  --CONSTRAINT chk_activo_fecha_hora CHECK (NOT (activo AND fchHoraRegistro IS NULL)),
-  --CONSTRAINT chk_fchNacimiento_registro CHECK (fchNacimiento <= fchHoraRegistro)
+  fchHoraRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  activo BOOLEAN NOT NULL  DEFAULT FALSE,
+  CONSTRAINT chk_fchNacimiento_registro CHECK (fchNacimiento <= fchHoraRegistro)
 );
 
 -- CREATE TRIGGER 'trigger_edad_trabajador()'
@@ -201,14 +202,16 @@ EXECUTE FUNCTION actualiza_edad();
 -- Table 'telefonoTrabajador'
 CREATE TABLE telefonoTrabajador (
   dniTrabajador CHAR(9) REFERENCES trabajador(dni) ON UPDATE CASCADE ON DELETE CASCADE,
-  telefono VARCHAR(9) NOT NULL CHECK (telefono ~ '^\d{9}$')
+  telefono VARCHAR(9) NOT NULL CHECK (telefono ~ '^\d{9}$'),
+  PRIMARY KEY (dniTrabajador, telefono)
 );
 
 
 -- Table 'emailTrabajador'
 CREATE TABLE emailTrabajador (
   dniTrabajador CHAR(9) REFERENCES trabajador(dni) ON UPDATE CASCADE ON DELETE CASCADE,
-  email VARCHAR(255) NOT NULL
+  email VARCHAR(255) NOT NULL,
+  PRIMARY KEY (dniTrabajador, email)
 );
 
 
@@ -219,9 +222,9 @@ CREATE TABLE usuarioAdulto (
   apellido1 VARCHAR(50) NOT NULL,
   apellido2 VARCHAR(50),
   fchNacimiento DATE NOT NULL CHECK (fchNacimiento BETWEEN '1900-01-01' AND CURRENT_DATE),
-  fchHoraRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Creo que puede hacerse con un trigger mejor
+  fchHoraRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   sexo CHAR(1) CHECK (sexo IN ('M', 'F', 'O')),
-  edad SMALLINT CHECK (edad > 0),
+  edad SMALLINT CHECK (edad >= 18),
   dni CHAR(9) NOT NULL UNIQUE CHECK (dni ~ '\d{8}[A-Za-z]$'),
   estudiante BOOLEAN NOT NULL
 );
@@ -246,9 +249,9 @@ CREATE TABLE usuarioMenor (
   apellido1 VARCHAR(50) NOT NULL,
   apellido2 VARCHAR(50),
   fchNacimiento DATE NOT NULL CHECK (fchNacimiento BETWEEN '1900-01-01' AND CURRENT_DATE),
-  fchHoraRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Creo que puede hacerse con un trigger mejor
+  fchHoraRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   sexo CHAR(1) CHECK (sexo IN ('M', 'F', 'O')),
-  edad SMALLINT CHECK (edad > 0),
+  edad SMALLINT CHECK (edad > 0 AND edad < 18),
   idTarjetaSocio INT REFERENCES tarjetaSocio(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
@@ -262,14 +265,18 @@ EXECUTE FUNCTION actualiza_edad();
 -- Table 'tutorUsuarioMenor'
 CREATE TABLE tutorUsuarioMenor (
   idUsuarioMenor INT REFERENCES usuarioMenor(id) ON UPDATE CASCADE ON DELETE CASCADE,
-  dniTutor CHAR(9) NOT NULL CHECK (dniTutor ~ '\d{8}[A-Za-z]$')
+  dniTutor CHAR(9) NOT NULL CHECK (dniTutor ~ '\d{8}[A-Za-z]$'),
+  PRIMARY KEY(idUsuarioMenor, dniTutor)
 );
 
 -- Table 'telefonoUsuario'
+
 CREATE TABLE telefonoUsuario (
   idUsuarioAdulto INT REFERENCES usuarioAdulto(id) ON UPDATE CASCADE ON DELETE CASCADE,
   idUsuarioMenor INT REFERENCES usuarioMenor(id) ON UPDATE CASCADE ON DELETE CASCADE,
-  telefono VARCHAR(20) NOT NULL CHECK (LENGTH(telefono) = 9 AND telefono ~ '\d+')
+  telefono VARCHAR(20) NOT NULL CHECK (LENGTH(telefono) = 9 AND telefono ~ '\d+'),
+  UNIQUE(idUsuarioAdulto, idUsuarioMenor, telefono) 
+
 );
 
 -- CREATE FUNCTION 'un_idUsuario_debe_ser_nulo()'
@@ -293,10 +300,12 @@ FOR EACH ROW
 EXECUTE PROCEDURE un_idUsuario_debe_ser_nulo();
 
 -- Table 'emailUsuario'
+
 CREATE TABLE emailUsuario (
   idUsuarioAdulto INT REFERENCES usuarioAdulto(id) ON UPDATE CASCADE ON DELETE CASCADE,
   idUsuarioMenor INT REFERENCES usuarioMenor(id) ON UPDATE CASCADE ON DELETE CASCADE,
-  email VARCHAR(50) NOT NULL
+  email VARCHAR(50) NOT NULL,
+  UNIQUE(idUsuarioAdulto, idUsuarioMenor, email) 
 );
 
 -- CREATE TRIGGER 'email()'
