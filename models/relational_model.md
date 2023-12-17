@@ -138,12 +138,11 @@
 - Color: NOT NULL
 - Color CHECK IN [AZUL, ROJO, VERDE]
 
-**Horario** (ID, ID_Trabajador, Periodo_Inicio, Periodo_Fin)
+**Horario** (ID, DNI_Trabajador, Fecha_Inicio, Fecha_Fin)
 
 - ID: PRIMARY KEY
-- ID_Trabajador: FOREIGN KEY de Trabajador(ID)
+- DNI_Trabajador: FOREIGN KEY de Trabajador(dni)
 - Periodo_Inicio: NOT NULL
-- Periodo_Fin: NOT NULL
 - Periodo_Inicio CHECK Periodo_Inicio <= Periodo_Fin
 - TRIGGER Periodo_Inicio y Periodo_Fin no se solapan para un mismo Trabajador
 

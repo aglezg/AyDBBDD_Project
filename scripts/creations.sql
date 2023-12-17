@@ -2,9 +2,10 @@
  * * * TABLE CREATIONS
  */
 
--- TABLE 'articulo'                               -- Falta TRIGGER ' STOCK Prestación'
+-- TABLE 'articulo'
 CREATE TABLE articulo (
   id SERIAL PRIMARY KEY,
+  tipo VARCHAR(19) CHECK (tipo in ('libro', 'materialPeriodico', 'materialAudiovisual')),
   titulo VARCHAR(50) NOT NULL,
   subtitulo VARCHAR(100),
   fchPublicacion DATE CHECK (fchPublicacion <= CURRENT_DATE),
@@ -93,6 +94,23 @@ CREATE TABLE libro (
   PRIMARY KEY (idArticulo)
 );
 
+-- CREATE FUNCTION 'check_tipo_libro()'
+CREATE OR REPLACE FUNCTION check_tipo_libro() RETURNS TRIGGER AS $$
+  BEGIN
+    IF (SELECT tipo FROM articulo WHERE id = NEW.idArticulo) != 'libro' THEN
+      RAISE EXCEPTION 'article to insert in table book has no type book';
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_check_tipo_libro'
+CREATE TRIGGER trigger_check_tipo_libro
+BEFORE INSERT OR UPDATE
+ON libro
+FOR EACH ROW
+EXECUTE FUNCTION check_tipo_libro();
+
 
 -- Table 'materialPeriodico'
 CREATE TABLE materialPeriodico (
@@ -103,6 +121,23 @@ CREATE TABLE materialPeriodico (
   PRIMARY KEY (idArticulo)
 );
 
+-- CREATE FUNCTION 'check_tipo_materialPeriodico()'
+CREATE OR REPLACE FUNCTION check_tipo_materialPeriodico() RETURNS TRIGGER AS $$
+  BEGIN
+    IF (SELECT tipo FROM articulo WHERE id = NEW.idArticulo) != 'materialPeriodico' THEN
+      RAISE EXCEPTION 'article to insert in table newspaper has no type newspaper';
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_check_tipo_materialPeriodico'
+CREATE TRIGGER trigger_check_tipo_materialPeriodico
+BEFORE INSERT OR UPDATE
+ON materialPeriodico
+FOR EACH ROW
+EXECUTE FUNCTION check_tipo_materialPeriodico();
+
 
 -- Table 'materialAudiovisual'
 CREATE TABLE materialAudiovisual (
@@ -112,6 +147,23 @@ CREATE TABLE materialAudiovisual (
   tipo VARCHAR(10) NOT NULL CHECK (tipo IN ('DVD', 'CD', 'CD_ROM', 'VHS', 'Audiolibro')),
   PRIMARY KEY (idArticulo)
 );
+
+-- CREATE FUNCTION 'check_tipo_materialAudiovisual()'
+CREATE OR REPLACE FUNCTION check_tipo_materialAudiovisual() RETURNS TRIGGER AS $$
+  BEGIN
+    IF (SELECT tipo FROM articulo WHERE id = NEW.idArticulo) != 'materialAudiovisual' THEN
+      RAISE EXCEPTION 'article to insert in table audiovisual has no type audiovisual';
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_check_tipo_materialAudiovisual'
+CREATE TRIGGER trigger_check_tipo_materialAudiovisual
+BEFORE INSERT OR UPDATE
+ON materialAudiovisual
+FOR EACH ROW
+EXECUTE FUNCTION check_tipo_materialAudiovisual();
 
 
 -- Table 'autor_materialAudiovisual'
@@ -132,9 +184,8 @@ CREATE TABLE trabajador (
   sexo CHAR(1) CHECK (sexo IN ('M', 'F', 'O')),
   contrasena VARCHAR(255) NOT NULL,
   edad SMALLINT CHECK (edad > 0),
-  -- Creo que lo de 'activo' puede hacerse con un trigger mejor y bueno, hay que hacer la tabla periodo antes
-  -- activo BOOLEAN GENERATED ALWAYS AS (EXISTS (SELECT 1 FROM Periodo WHERE trabajador.dni = Periodo.dni AND Fecha_Fin IS NULL)) STORED,
-  fchHoraRegistro TIMESTAMP WITHOUT TIME ZONE NOT NULL -- Creo que puede hacerse con un trigger mejor. En la práctica 5 el profe uso uno
+  fchHoraRegistro TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  activo BOOLEAN NOT NULL  DEFAULT FALSE
   --CONSTRAINT chk_activo_fecha_hora CHECK (NOT (activo AND fchHoraRegistro IS NULL)),
   --CONSTRAINT chk_fchNacimiento_registro CHECK (fchNacimiento <= fchHoraRegistro)
 );
@@ -339,6 +390,63 @@ ON horario
 FOR EACH ROW
 EXECUTE PROCEDURE check_solapamiento_periodos();
 
+-- CREATE FUNCTION 'check_no_mas_de_2_periodos_con_fchFin_null()'
+CREATE OR REPLACE FUNCTION check_no_mas_de_2_periodos_con_fchFin_null()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.fchFin IS NULL AND (SELECT COUNT(*) FROM horario WHERE dniTrabajador = NEW.dniTrabajador AND fchFin = NULL) >= 1 THEN
+    RAISE EXCEPTION 'An employeer cant have more that 1 period with null end date';
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_un_trabajador_solo_puede_tener_un_periodo_nulo'
+CREATE TRIGGER trigger_un_trabajador_solo_puede_tener_un_periodo_nulo
+BEFORE INSERT OR UPDATE
+ON horario
+FOR EACH ROW
+EXECUTE PROCEDURE check_no_mas_de_2_periodos_con_fchFin_null();
+
+-- CREATE FUNCTION 'actualiza_campo_activo_a_true_en_trabajador()'
+CREATE OR REPLACE FUNCTION actualiza_campo_activo_a_true_en_trabajador()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.fchFin IS NULL THEN
+    UPDATE trabajador
+    SET activo = TRUE
+    WHERE dni = NEW.dniTrabajador;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_trabajador_comienza_periodo'
+CREATE TRIGGER trigger_trabajador_comienza_periodo
+BEFORE INSERT OR UPDATE
+ON horario
+FOR EACH ROW
+EXECUTE PROCEDURE actualiza_campo_activo_a_true_en_trabajador();
+
+-- CREATE FUNCTION 'actualiza_campo_activo_a_false_en_trabajador()'
+CREATE OR REPLACE FUNCTION actualiza_campo_activo_a_false_en_trabajador()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.fchFin IS NULL AND NEW.fchFin IS NOT NULL THEN
+    UPDATE trabajador
+    SET activo = FALSE
+    WHERE dni = NEW.dniTrabajador;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_trabajador_termina_periodo'
+CREATE TRIGGER trigger_trabajador_termina_periodo
+AFTER UPDATE
+ON horario
+FOR EACH ROW
+EXECUTE PROCEDURE actualiza_campo_activo_a_false_en_trabajador();
+
 -- CREATE FUNCTION 'fchInicio_mayor_igual_fchRegistro()'
 CREATE OR REPLACE FUNCTION fchInicio_mayor_igual_fchRegistro() RETURNS TRIGGER AS $$
   BEGIN
@@ -444,8 +552,46 @@ CREATE OR REPLACE FUNCTION numero_prestaciones_menor_o_igual_a_5_o_7() RETURNS T
   END;
 $$ LANGUAGE plpgsql;
 
+-- CREATE TRIGGER 'comprobacion_numero_prestaciones'
 CREATE TRIGGER comprobacion_numero_prestaciones
 BEFORE INSERT OR UPDATE 
 ON horario
 FOR EACH ROW 
 EXECUTE PROCEDURE numero_prestaciones_menor_o_igual_a_5_o_7();
+
+-- CREATE FUNCTION 'disminuye_articulo_stock()'
+CREATE OR REPLACE FUNCTION disminuye_articulo_stock() RETURNS TRIGGER AS $$
+  BEGIN
+    UPDATE articulo
+    SET stock = stock - 1
+    WHERE id = NEW.idArticulo;
+
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE FUNCTION 'aumenta_articulo_stock()'
+CREATE OR REPLACE FUNCTION aumenta_articulo_stock() RETURNS TRIGGER AS $$
+  BEGIN
+    IF OLD.vigente = TRUE AND NEW.vigente = FALSE THEN
+      UPDATE articulo
+      SET stock = stock + 1
+      WHERE id = NEW.idArticulo;
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'disminuir_stock_al_crear_prestacion'
+CREATE TRIGGER disminuir_stock_al_crear_prestacion
+BEFORE INSERT
+ON prestacion
+FOR EACH ROW
+EXECUTE PROCEDURE disminuye_articulo_stock();
+
+-- CREATE TRIGGER 'aumentar_stock_al_finalizar_prestacion'
+CREATE TRIGGER aumentar_stock_al_finalizar_prestacion
+AFTER UPDATE
+ON prestacion
+FOR EACH ROW
+EXECUTE PROCEDURE aumenta_articulo_stock();
