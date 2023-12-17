@@ -183,9 +183,8 @@ CREATE TABLE trabajador (
   sexo CHAR(1) CHECK (sexo IN ('M', 'F', 'O')),
   contrasena VARCHAR(255) NOT NULL,
   edad SMALLINT CHECK (edad > 0),
-  -- Creo que lo de 'activo' puede hacerse con un trigger mejor y bueno, hay que hacer la tabla periodo antes
-  -- activo BOOLEAN GENERATED ALWAYS AS (EXISTS (SELECT 1 FROM Periodo WHERE trabajador.dni = Periodo.dni AND Fecha_Fin IS NULL)) STORED,
-  fchHoraRegistro TIMESTAMP WITHOUT TIME ZONE NOT NULL -- Creo que puede hacerse con un trigger mejor. En la práctica 5 el profe uso uno
+  fchHoraRegistro TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  activo BOOLEAN NOT NULL  DEFAULT FALSE
   --CONSTRAINT chk_activo_fecha_hora CHECK (NOT (activo AND fchHoraRegistro IS NULL)),
   --CONSTRAINT chk_fchNacimiento_registro CHECK (fchNacimiento <= fchHoraRegistro)
 );
@@ -389,6 +388,63 @@ BEFORE INSERT OR UPDATE
 ON horario
 FOR EACH ROW
 EXECUTE PROCEDURE check_solapamiento_periodos();
+
+-- CREATE FUNCTION 'check_no_mas_de_2_periodos_con_fchFin_null()'
+CREATE OR REPLACE FUNCTION check_no_mas_de_2_periodos_con_fchFin_null()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.fchFin IS NULL AND (SELECT COUNT(*) FROM horario WHERE dniTrabajador = NEW.dniTrabajador AND fchFin = NULL) >= 1 THEN
+    RAISE EXCEPTION 'An employeer cant have more that 1 period with null end date';
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_un_trabajador_solo_puede_tener_un_periodo_nulo'
+CREATE TRIGGER trigger_un_trabajador_solo_puede_tener_un_periodo_nulo
+BEFORE INSERT OR UPDATE
+ON horario
+FOR EACH ROW
+EXECUTE PROCEDURE check_no_mas_de_2_periodos_con_fchFin_null();
+
+-- CREATE FUNCTION 'actualiza_campo_activo_a_true_en_trabajador()'
+CREATE OR REPLACE FUNCTION actualiza_campo_activo_a_true_en_trabajador()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.fchFin IS NULL THEN
+    UPDATE trabajador
+    SET activo = TRUE
+    WHERE dni = NEW.dniTrabajador;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_trabajador_comienza_periodo'
+CREATE TRIGGER trigger_trabajador_comienza_periodo
+BEFORE INSERT OR UPDATE
+ON horario
+FOR EACH ROW
+EXECUTE PROCEDURE actualiza_campo_activo_a_true_en_trabajador();
+
+-- CREATE FUNCTION 'actualiza_campo_activo_a_false_en_trabajador()'
+CREATE OR REPLACE FUNCTION actualiza_campo_activo_a_false_en_trabajador()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.fchFin IS NULL AND NEW.fchFin IS NOT NULL THEN
+    UPDATE trabajador
+    SET activo = FALSE
+    WHERE dni = NEW.dniTrabajador;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'trigger_trabajador_termina_periodo'
+CREATE TRIGGER trigger_trabajador_termina_periodo
+AFTER UPDATE
+ON horario
+FOR EACH ROW
+EXECUTE PROCEDURE actualiza_campo_activo_a_false_en_trabajador();
 
 -- CREATE FUNCTION 'fchInicio_mayor_igual_fchRegistro()'
 CREATE OR REPLACE FUNCTION fchInicio_mayor_igual_fchRegistro() RETURNS TRIGGER AS $$
