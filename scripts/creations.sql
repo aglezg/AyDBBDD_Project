@@ -2,7 +2,7 @@
  * * * TABLE CREATIONS
  */
 
--- TABLE 'articulo'                               -- Falta TRIGGER ' STOCK Prestación'
+-- TABLE 'articulo'
 CREATE TABLE articulo (
   id SERIAL PRIMARY KEY,
   titulo VARCHAR(50) NOT NULL,
@@ -363,7 +363,7 @@ CREATE TABLE dia (
   idHorario INT REFERENCES horario(id) ON UPDATE CASCADE ON DELETE CASCADE,
   nombre VARCHAR(9) NOT NULL CHECK (nombre in ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo')),
   PRIMARY KEY (idHorario, nombre)
-)
+);
 
 -- Table 'periodo'
 CREATE TABLE periodo (
@@ -443,8 +443,46 @@ CREATE OR REPLACE FUNCTION numero_prestaciones_menor_o_igual_a_5_o_7() RETURNS T
   END;
 $$ LANGUAGE plpgsql;
 
+-- CREATE TRIGGER 'comprobacion_numero_prestaciones'
 CREATE TRIGGER comprobacion_numero_prestaciones
 BEFORE INSERT OR UPDATE 
 ON horario
 FOR EACH ROW 
 EXECUTE PROCEDURE numero_prestaciones_menor_o_igual_a_5_o_7();
+
+-- CREATE FUNCTION 'disminuye_articulo_stock()'
+CREATE OR REPLACE FUNCTION disminuye_articulo_stock() RETURNS TRIGGER AS $$
+  BEGIN
+    UPDATE articulo
+    SET stock = stock - 1
+    WHERE id = NEW.idArticulo;
+
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE FUNCTION 'aumenta_articulo_stock()'
+CREATE OR REPLACE FUNCTION aumenta_articulo_stock() RETURNS TRIGGER AS $$
+  BEGIN
+    IF OLD.vigente = TRUE AND NEW.vigente = FALSE THEN
+      UPDATE articulo
+      SET stock = stock + 1
+      WHERE id = NEW.idArticulo;
+    END IF;
+    RETURN NEW;
+  END;
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER 'disminuir_stock_al_crear_prestacion'
+CREATE TRIGGER disminuir_stock_al_crear_prestacion
+BEFORE INSERT
+ON prestacion
+FOR EACH ROW
+EXECUTE PROCEDURE disminuye_articulo_stock();
+
+-- CREATE TRIGGER 'aumentar_stock_al_finalizar_prestacion'
+CREATE TRIGGER aumentar_stock_al_finalizar_prestacion
+AFTER UPDATE
+ON prestacion
+FOR EACH ROW
+EXECUTE PROCEDURE aumenta_articulo_stock();
