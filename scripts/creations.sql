@@ -455,7 +455,8 @@ FOR EACH ROW
 EXECUTE PROCEDURE actualiza_campo_activo_a_false_en_trabajador();
 
 -- Función que comprueba que la fecha de inicio de un periodo de trabajo sea mayor q o igualue la fecha en la que se registró el trabajador
-CREATE OR REPLACE FUNCTION fchInicio_mayor_igual_fchRegistro() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION fchInicio_mayor_igual_fchRegistro() 
+RETURNS TRIGGER AS $$
   BEGIN
     IF (
       NEW.fchInicio < (SELECT fchHoraRegistro from trabajador WHERE dni = NEW.dniTrabajador)
@@ -533,7 +534,7 @@ CREATE OR REPLACE FUNCTION numero_prestaciones_menor_o_igual_a_5_o_7() RETURNS T
   BEGIN
     IF (NEW.idUsuarioAdulto IS NOT NULL AND NEW.idUsuarioMenor IS NULL) THEN
       IF (
-          TRUE = (SELECT estudiante FROM usuarioAdulto WHERE idUsuarioAdulto = NEW.idUsuarioAdulto) -- Si es adulto estudiante (prestaciones <= 7)
+          TRUE = (SELECT estudiante FROM usuarioAdulto WHERE id = NEW.idUsuarioAdulto) -- Si es adulto estudiante (prestaciones <= 7)
         ) THEN
           IF (
             7 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
@@ -560,10 +561,10 @@ CREATE OR REPLACE FUNCTION numero_prestaciones_menor_o_igual_a_5_o_7() RETURNS T
   END;
 $$ LANGUAGE plpgsql;
 
--- Trigger para el evento de inserción o actualización en la tabla 'horario' para el máximo de prestaciones permitidas
+-- Trigger para el evento de inserción o actualización en la tabla 'prestacion' para el máximo de prestaciones permitidas
 CREATE TRIGGER comprobacion_numero_prestaciones
 BEFORE INSERT OR UPDATE 
-ON horario
+ON prestacion
 FOR EACH ROW 
 EXECUTE PROCEDURE numero_prestaciones_menor_o_igual_a_5_o_7();
 
