@@ -207,7 +207,7 @@ CREATE TABLE telefonoTrabajador (
 );
 
 
--- Tabla de email's de trabajadores
+-- Tabla de emails de trabajadores
 CREATE TABLE emailTrabajador (
   dniTrabajador CHAR(9) REFERENCES trabajador(dni) ON UPDATE CASCADE ON DELETE CASCADE,
   email VARCHAR(255) NOT NULL,
