@@ -1,6 +1,7 @@
-**Articulo** (ID, Título, Subtítulo, Fecha_Publicación, Portada, Stock, Disponible)
+**Articulo** (ID, Tipo, Título, Subtítulo, Fecha_Publicación, Portada, Stock, Disponible)
 
 - ID: PRIMARY KEY
+- Tipo: CHECK IN [libro, materialPeriodico, materialAudiovisual]
 - Titulo: NOT NULL
 - Fecha_Publicacion <= FECHA_ACTUAL
 - Stock: NOT NULL
@@ -151,7 +152,7 @@
 - PRIMARY KEY(ID_Horario, Nombre)
 - ID_Horario: FOREIGN KEY de Horario(ID)
 
-**Periódo** (ID, Inicio, Fin, ID_Horario, Nombre_Dia)
+**Periodo** (ID, Inicio, Fin, ID_Horario, Nombre_Dia)
 
 - ID: PRIMARY KEY
 - Inicio: NOT NULL
@@ -196,3 +197,4 @@
 - Vigente TRIGGER Vigente = True IF FechaDevolución IS NOT NULL
 - TRIGGER En caso de inserción: un usuario no puede tener más 5 prestaciones vigentes (o 7 si es estudiante o menor)
 - TRIGGER (ID_Usuario_Adulto != NULL && ID_Usuario_Menor = NULL) || (ID_Usuario_Adulto = NULL && ID_Usuario_Menor != NULL)
+- TRIGGER: Actualizar el stock de cada articulo con la creacion o finalizacion de cada prestacion
