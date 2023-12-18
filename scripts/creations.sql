@@ -323,24 +323,24 @@ CREATE TABLE provincia (
 -- Tabla de islas
 CREATE TABLE Isla (
     id SERIAL PRIMARY KEY,
+    idProvincia INT REFERENCES provincia(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     nombreIsla VARCHAR(255) NOT NULL,
     latitud POINT NOT NULL,
-    longitud POINT NOT NULL,
-    idProvincia INT REFERENCES provincia(id) ON UPDATE CASCADE ON DELETE RESTRICT
+    longitud POINT NOT NULL
 );
 
 
 -- Tabla de direcciones
 CREATE TABLE direccion (
     id SERIAL PRIMARY KEY,
+    idIsla INT REFERENCES isla(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     ciudad VARCHAR(255) NOT NULL,
     codigoPostal CHAR(5) NOT NULL CHECK (codigoPostal ~ '\d+'),
     direccion1 TEXT NOT NULL,
     direccion2 TEXT,
     dniTrabajador CHAR(9) REFERENCES trabajador(dni) ON UPDATE CASCADE ON DELETE CASCADE,
     idUsuarioAdulto INT REFERENCES usuarioAdulto(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    idUsuarioMenor INT REFERENCES usuarioMenor(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    idIsla INT REFERENCES isla(id) ON UPDATE CASCADE ON DELETE RESTRICT
+    idUsuarioMenor INT REFERENCES usuarioMenor(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Funcion que comprueba si de los campos idUsuarioMenor, idUsuarioAdulto y dniTrabajador; al menos 2 de ellos son nulos y el otro no nulo
@@ -484,10 +484,10 @@ CREATE TABLE dia (
 -- Tabla de periodos de tiempo
 CREATE TABLE periodo (
   id SERIAL PRIMARY KEY,
-  horaInicio TIME NOT NULL,
-  horaFin TIME NOT NULL,
   idHorario INT,
   nombreDia VARCHAR(9),
+  horaInicio TIME NOT NULL,
+  horaFin TIME NOT NULL,
   FOREIGN KEY (idHorario, nombreDia) REFERENCES dia(idHorario, nombre) ON UPDATE CASCADE ON DELETE CASCADE,
   CHECK (horaInicio <= horaFin)
 );
