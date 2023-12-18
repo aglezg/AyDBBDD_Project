@@ -325,6 +325,45 @@ INSERT INTO direccion (ciudad, codigoPostal, direccion1, dniTrabajador, idUsuari
   ('Agaete', '90123', 'Direccion9', NULL, NULL, 8, 2),
   ('Arrecife', '01234', 'Direccion10', NULL, NULL, 9, 3);
 
+  INSERT INTO horario (dniTrabajador, fchInicio, fchFin) VALUES
+  ('12345678A', '2022-01-01', '2023-01-15'),
+  ('98765432B', '2022-02-01', '2023-02-15'),
+  ('45678901C', '2022-03-01', '2023-03-15'),
+  ('78901234D', '2022-04-01', '2023-04-15'),
+  ('23456789E', '2022-05-01', NULL),
+  ('34567890F', '2022-06-01', NULL),
+  ('89012345G', '2022-07-01', NULL),
+  ('01234567H', '2022-08-01', NULL),
+  ('56789012I', '2022-09-01', NULL),
+  ('67890123J', '2022-10-01', '2023-10-15');
+
+
+INSERT INTO dia (idHorario, nombre) VALUES
+  (1, 'Lunes'),
+  (1, 'Martes'),
+  (1, 'Miercoles'),
+  (2, 'Jueves'),
+  (2, 'Viernes'),
+  (3, 'Sabado'),
+  (4, 'Domingo'),
+  (5, 'Lunes'),
+  (6, 'Martes'),
+  (7, 'Miercoles');
+
+INSERT INTO periodo (idHorario, nombreDia, horaInicio, horaFin) VALUES
+  (1, 'Lunes', '09:00:00', '13:00:00'),
+  (1, 'Martes', '09:00:00', '13:00:00'),
+  (1, 'Miercoles', '09:00:00', '13:00:00'),
+  (2, 'Jueves', '14:00:00', '18:00:00'),
+  (2, 'Viernes', '14:00:00', '18:00:00'),
+  (3, 'Sqbado', '10:00:00', '15:00:00'),
+  (4, 'Domingo', '16:00:00', '20:00:00'),
+  (5, 'Lunes', '08:00:00', '12:00:00'),
+  (6, 'Martes', '10:00:00', '14:00:00'),
+  (7, 'Miercoles', '15:00:00', '19:00:00');
+
+
+
 INSERT INTO prestacion (idArticulo, dniTrabajador, idUsuarioAdulto, idUsuarioMenor, fchInicio, fchFin, fchDevolucion)
 VALUES 
   (1, '12345678A', 1, NULL, '2022-10-01', '2022-10-15', NULL),
