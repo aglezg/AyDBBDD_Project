@@ -252,7 +252,7 @@ CREATE TABLE usuarioMenor (
   fchHoraRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   sexo CHAR(1) CHECK (sexo IN ('M', 'F', 'O')),
   edad SMALLINT CHECK (edad > 0 AND edad < 18),
-  idTarjetaSocio INT REFERENCES tarjetaSocio(id) ON UPDATE CASCADE ON DELETE RESTRICT
+  idTarjetaSocio INT UNIQUE REFERENCES tarjetaSocio(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 -- Trigger para generar la edad al insertar un usuario menor
