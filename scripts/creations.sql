@@ -297,7 +297,7 @@ ON telefonoUsuario
 FOR EACH ROW 
 EXECUTE PROCEDURE un_idUsuario_debe_ser_nulo();
 
--- Tabla de email's de usuarios (adultos y menores)
+-- Tabla de emails de usuarios (adultos y menores)
 CREATE TABLE emailUsuario (
   idUsuarioAdulto INT REFERENCES usuarioAdulto(id) ON UPDATE CASCADE ON DELETE CASCADE,
   idUsuarioMenor INT REFERENCES usuarioMenor(id) ON UPDATE CASCADE ON DELETE CASCADE,
