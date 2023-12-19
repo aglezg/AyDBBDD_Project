@@ -156,12 +156,12 @@ VALUES
   ('12345678A', 'Juan', 'Pérez', 'Gómez', '1990-05-15', 'juanito123', 'M', 'contraseña123', 32, '2013-11-18 09:30:00'),
   ('98765432B', 'María', 'González', 'Fernández', '1985-08-20', 'maria85', 'F', 'claveSegura', 37, '2017-11-18 10:15:00'),
   ('45678901C', 'Pedro', 'López', 'Martínez', '1988-12-10', 'pedrito', 'M', 'password1234', 34, '2020-11-18 11:00:00'),
-  ('78901234D', 'Ana', 'Ruiz', 'Sánchez', '1992-03-25', 'anita92', 'F', 'segura123', 30, '2022-11-18 11:45:00'),
+  ('78901234D', 'Ana', 'Ruiz', 'Sánchez', '1992-03-25', 'anita92', 'F', 'segura123', 30, '2020-11-18 11:45:00'),
   ('23456789E', 'Luis', 'Fernández', 'Hernández', '1980-07-05', 'luisito', 'M', 'miClave', 43, '2014-11-18 12:30:00'),
   ('34567890F', 'Elena', 'Díaz', 'Ramírez', '1995-01-08', 'elenita', 'F', 'clave123', 28, '2019-11-18 13:15:00'),
-  ('89012345G', 'Carlos', 'Jiménez', 'Álvarez', '1983-09-12', 'carlitos', 'M', 'contraseñaSegura', 38, '2022-11-18 14:00:00'),
+  ('89012345G', 'Carlos', 'Jiménez', 'Álvarez', '1983-09-12', 'carlitos', 'M', 'contraseñaSegura', 38, '2021-11-18 14:00:00'),
   ('01234567H', 'Laura', 'Vega', 'Gutiérrez', '1987-11-30', 'lau87', 'F', 'claveLarga', 36, '2021-11-18 14:45:00'),
-  ('56789012I', 'Javier', 'Morales', 'Ortega', '1998-06-18', 'javi98', 'M', 'miPassword', 25, '2022-11-18 15:30:00'),
+  ('56789012I', 'Javier', 'Morales', 'Ortega', '1998-06-18', 'javi98', 'M', 'miPassword', 25, '2020-11-18 15:30:00'),
   ('67890123J', 'Sara', 'Pérez', 'Rodríguez', '1993-04-03', 'sara93', 'F', 'clave1234', 30, '2019-11-18 16:15:00');
 
 -- Inserciones para telefonoTrabajador
@@ -356,7 +356,7 @@ INSERT INTO periodo (idHorario, nombreDia, horaInicio, horaFin) VALUES
   (1, 'Miercoles', '09:00:00', '13:00:00'),
   (2, 'Jueves', '14:00:00', '18:00:00'),
   (2, 'Viernes', '14:00:00', '18:00:00'),
-  (3, 'Sqbado', '10:00:00', '15:00:00'),
+  (3, 'Sabado', '10:00:00', '15:00:00'),
   (4, 'Domingo', '16:00:00', '20:00:00'),
   (5, 'Lunes', '08:00:00', '12:00:00'),
   (6, 'Martes', '10:00:00', '14:00:00'),
