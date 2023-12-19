@@ -86,17 +86,6 @@ def getWorkerByDNI(dni):
                      'activo': worker[10]})
 
 
-
-
-
-
-
-
-
-
-
-
-
 @app.route('/select')
 def index():
     conn = get_db_connection()
