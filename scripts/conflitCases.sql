@@ -84,9 +84,53 @@ INSERT INTO trabajador (dni, nombre, apellido1, apellido2, fchNacimiento, nombre
 VALUES 
   ('09999999X', 'Tester', 'Tester', 'Tesster', '1990-05-15', 'juanito123', 'M', 'psswdTester', 32, '2013-11-18 09:30:00');
 
--- Tabla Teléfonos 
+-- Tabla telefonoTrabajador
 -- No existen dos números repetidos 
 INSERT INTO telefonoTrabajador (dniTrabajador, telefono)
 VALUES
   ('12345678A', '987654321'),
   ('34567890F', '987654321');
+
+-- Evitar Duplicidad de Datos
+INSERT INTO telefonoTrabajador (dniTrabajador, telefono)
+VALUES
+  ('12345678A', '123456789'),
+  ('12345678A', '123456789');
+
+-- Tabla emailTrabajador 
+-- No existen dos emails repetidos 
+INSERT INTO emailTrabajador (dniTrabajador, email)
+VALUES
+  ('12345678A', 'juan.perez@example.com'),
+  ('98765432B', 'juan.perez@example.com');
+
+-- Evitar Duplicidad de Datos
+INSERT INTO emailTrabajador (dniTrabajador, email)
+VALUES
+  ('12345678A', 'juan.perez@example.com'),
+  ('12345678A', 'juan.perez@example.com');
+
+-- Tabla telefonoUsuario
+-- No puede existir un telefono para un usuarioAdulto y el mismo telefono para un usuarioMenor
+INSERT INTO telefonoUsuario (idUsuarioAdulto, idUsuarioMenor, telefono)
+VALUES
+  (1, 1, '012012012');
+
+-- Tabla horario
+-- No se pueden solapar los periodos de trabajo para un mismo trabajador
+INSERT INTO horario (dniTrabajador, fchInicio, fchFin) 
+VALUES
+  ('12345678A', '2022-03-12', '2023-01-15'),
+  ('12345678A', '2022-11-02', '2023-01-01');
+
+-- Tabla prestacion
+-- Una prestacion debe ser creada por un trabajador Existente
+INSERT INTO prestacion (idArticulo, dniTrabajador, idUsuarioAdulto, idUsuarioMenor, fchInicio, fchFin, fchDevolucion)
+VALUES 
+  (1, '99999999A', 1, NULL, '2022-10-01', '2022-10-15', NULL);
+
+-- Una prestacion no puede ser para dos tipos de usuarios distintos a la vez
+INSERT INTO prestacion (idArticulo, dniTrabajador, idUsuarioAdulto, idUsuarioMenor, fchInicio, fchFin, fchDevolucion)
+VALUES 
+  (1, '12345678A', 1, 1, '2022-10-01', '2022-10-15', NULL);
+

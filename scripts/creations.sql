@@ -210,7 +210,7 @@ CREATE TABLE telefonoTrabajador (
 -- Tabla de emails de trabajadores
 CREATE TABLE emailTrabajador (
   dniTrabajador CHAR(9) REFERENCES trabajador(dni) ON UPDATE CASCADE ON DELETE CASCADE,
-  email VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
   PRIMARY KEY (dniTrabajador, email)
 );
 
@@ -538,13 +538,13 @@ CREATE OR REPLACE FUNCTION numero_prestaciones_menor_o_igual_a_5_o_7() RETURNS T
           TRUE = (SELECT estudiante FROM usuarioAdulto WHERE id = NEW.idUsuarioAdulto) -- Si es adulto estudiante (prestaciones <= 7)
         ) THEN
           IF (
-            7 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
+            7 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioAdulto = NEW.idUsuarioAdulto AND vigente = TRUE GROUP BY idUsuarioAdulto) 
           ) THEN
           RAISE EXCEPTION 'el numero de prestaciones vigentes permitidas para un usuario adulto estudiante debe ser 7 o menos';
           END IF;
       ELSE -- Si es adulto no estudiante (prestaciones <= 5)
         IF (
-            5 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
+            5 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioAdulto = NEW.idUsuarioAdulto AND vigente = TRUE GROUP BY idUsuarioAdulto) 
           ) THEN
           RAISE EXCEPTION 'el numero de prestaciones vigentes permitidas para un usuario adulto no estudiante debe ser 5 o menos';
           END IF;
