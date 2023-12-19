@@ -202,7 +202,7 @@ EXECUTE FUNCTION actualiza_edad();
 -- Tabla de teléfonos de trabajadores
 CREATE TABLE telefonoTrabajador (
   dniTrabajador CHAR(9) REFERENCES trabajador(dni) ON UPDATE CASCADE ON DELETE CASCADE,
-  telefono VARCHAR(9) NOT NULL CHECK (telefono ~ '^\d{9}$'),
+  telefono VARCHAR(9) NOT NULL UNIQUE CHECK (telefono ~ '^\d{9}$'),
   PRIMARY KEY (dniTrabajador, telefono)
 );
 
