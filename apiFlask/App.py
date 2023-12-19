@@ -84,10 +84,10 @@ def getABookByTitle(title):
     from books import returnBookByTitle
     return returnBookByTitle(title)
 
-# @app.route('/mylibrary/articulos/libros/autor/id/<int:id>', methods=['GET'])
-# def getABookByAutorId(id):
-#     from books import returnBookByAutorId
-#     return returnBookByAutorId(id)
+@app.route('/mylibrary/articulos/libros/autor/id/<int:id>', methods=['GET'])
+def getABookByAutorId(id):
+    from books import returnBookByAutorId
+    return returnBookByAutorId(id)
 
 
 # Get all adult-users

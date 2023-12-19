@@ -101,3 +101,35 @@ def returnBookByTitle(title):
                      'estilo': book[11],
                      'sinopsis': book[12],
                      'idautor': book[13]})
+
+# Return an book by autor ID
+def returnBookByAutorId(id):
+    # Connect to DB
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Execute queries
+    cur.execute('SELECT * FROM articulo INNER JOIN libro ON articulo.id = libro.idarticulo WHERE idautor = %s;',(id,))
+    books = cur.fetchall()
+
+    # Convert to JSON format
+    books_list = [{'id': row[0],
+                     'tipo': row[1],
+                     'titulo': row[2],
+                     'subtitulo': row[3],
+                     'fchPublicacion': row[4],
+                     'portada': base64.b64encode(row[5]).decode('utf-8') if row[5] else None,
+                     'stock': row[6],
+                     'disponible': row[7],
+                     'editorial': row[9],
+                     'numpaginas': row[10],
+                     'estilo': row[11],
+                     'sinopsis': row[12],
+                     'idautor': row[13]} for row in books]
+    
+    # Disconnect from DB
+    cur.close()
+    conn.close()
+    
+    # Return results
+    return jsonify(books_list)
