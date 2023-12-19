@@ -1,8 +1,7 @@
 # articles.py
 
-from flask import jsonify, request
+from flask import jsonify
 from App import get_db_connection
-from datetime import datetime
 import base64
 
 # Return all articles

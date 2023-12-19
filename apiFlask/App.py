@@ -68,11 +68,26 @@ def deleteAnArticle(id):
     return removeArticleByID(id)
 
 
+# Book routes
+@app.route('/mylibrary/articulos/libros', methods=['GET'])
+def getAllBooks():
+    from books import returnAllBooks
+    return returnAllBooks()
 
+@app.route('/mylibrary/articulos/libros/id/<int:id>', methods=['GET'])
+def getABookById(id):
+    from books import returnBookByID
+    return returnBookByID(id)
 
+@app.route('/mylibrary/articulos/libros/titulo/<string:title>', methods=['GET'])
+def getABookByTitle(title):
+    from books import returnBookByTitle
+    return returnBookByTitle(title)
 
-
-
+# @app.route('/mylibrary/articulos/libros/autor/id/<int:id>', methods=['GET'])
+# def getABookByAutorId(id):
+#     from books import returnBookByAutorId
+#     return returnBookByAutorId(id)
 
 
 # Get all adult-users
