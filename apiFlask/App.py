@@ -1,6 +1,5 @@
-import os
 import psycopg2
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask
 from flask import jsonify
 
 app = Flask(__name__)
@@ -9,15 +8,54 @@ app = Flask(__name__)
 def get_db_connection():
     conn = psycopg2.connect(
             host='localhost',
-        	database="mylibrary",
-		    user="postgres",
-            password="1234")
+        	database='mylibrary',
+		    user='postgres',
+            password='1234')
     return conn
 
-# Default welcome route
-@app.route('/mylibrary', methods=['GET', 'POST'])
+# Default route
+@app.route('/mylibrary', methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def welcome():
-  return "Hello World!"
+  return jsonify({'mensaje': 'Bienvenido al sistema de base de datos myLibrary!'})
+
+
+# Author routes
+@app.route('/mylibrary/autores', methods=['GET'])
+def getAllAuthors():
+    from authors import returnAllAuthors
+    return returnAllAuthors()
+
+@app.route('/mylibrary/autores/<int:id>', methods=['GET'])
+def getAnAuthor(id):
+    from authors import returnAuthorByID
+    return returnAuthorByID(id)
+
+@app.route('/mylibrary/autores', methods=['POST'])
+def postAnAuthor():
+    from authors import createAuthor
+    return createAuthor()
+
+@app.route('/mylibrary/autores/<int:id>', methods=['PATCH'])
+def patchAnAuthor(id):
+    from authors import updateAuthor
+    return updateAuthor(id)
+
+@app.route('/mylibrary/autores/<int:id>', methods=['DELETE'])
+def deleteAnAuthor(id):
+    from authors import removeAuthorByID
+    return removeAuthorByID(id)
+
+
+# Article routes
+
+
+
+
+
+
+
+
+
 
 
 
@@ -70,7 +108,7 @@ def getAdultUserByID(id):
 
     # Check if worker is not found
     if adult_user is None:
-        return jsonify({'error': f"Adult user with ID {id} not found"}), 404
+        return jsonify({'error': f'Adult user with ID {id} not found'}), 404
 
     # Return results
     return jsonify({'id': adult_user[0],
@@ -133,7 +171,7 @@ def getMinorUserByID(id):
 
     # Check if worker is not found
     if minor_user is None:
-        return jsonify({'error': f"Minor user with ID {id} not found"}), 404
+        return jsonify({'error': f'Minor user with ID {id} not found'}), 404
 
     # Return results
     return jsonify({'id': minor_user[0],
@@ -197,7 +235,7 @@ def getWorkerByDNI(dni):
 
     # Check if worker is not found
     if worker is None:
-        return jsonify({'error': f"Worker with DNI {dni} not found"}), 404
+        return jsonify({'error': f'Worker with DNI {dni} not found'}), 404
 
     # Return results
     return jsonify({'dni': worker[0],
@@ -276,7 +314,7 @@ def getDeliveryByID(id):
 
     # Check if worker is not found
     if delivery is None:
-        return jsonify({'error': f"Delivery with ID {id} not found"}), 404
+        return jsonify({'error': f'Delivery with ID {id} not found'}), 404
 
     # Return results
     return jsonify({'id': delivery[0],
