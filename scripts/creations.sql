@@ -86,7 +86,7 @@ EXECUTE FUNCTION actualiza_edad();
 
 -- Tabla de libros
 CREATE TABLE libro (
-  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE CASCADE,
   editorial VARCHAR(50) NOT NULL,
   numPaginas INT NOT NULL CHECK (numPaginas > 0),
   estilo VARCHAR(9) NOT NULL CHECK (estilo IN ('Narrativo', 'Poetico', 'Dramatico', 'Epico', 'Lirico', 'Didactico', 'Satirico')),
@@ -115,7 +115,7 @@ EXECUTE FUNCTION check_tipo_libro();
 
 -- Tabla de materiales periódicos (periódicos o revistas)
 CREATE TABLE materialPeriodico (
-  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE CASCADE,
   editorial VARCHAR(50) NOT NULL,
   numPaginas INT NOT NULL CHECK (numPaginas > 0),
   tipo VARCHAR(9) NOT NULL CHECK (tipo IN ('Periodico', 'Revista')),
@@ -142,7 +142,7 @@ EXECUTE FUNCTION check_tipo_materialPeriodico();
 
 -- Tabla de materiales audiovisuales (peliculas, documentales o series)
 CREATE TABLE materialAudiovisual (
-  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE CASCADE,
   duracion INTERVAL CHECK (duracion > '00:00:00'),
   categoria VARCHAR(10) NOT NULL CHECK (categoria IN ('Pelicula', 'Documental', 'Serie')),
   tipo VARCHAR(10) NOT NULL CHECK (tipo IN ('DVD', 'CD', 'CD_ROM', 'VHS', 'Audiolibro')),
