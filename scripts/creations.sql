@@ -99,7 +99,7 @@ CREATE TABLE libro (
 CREATE OR REPLACE FUNCTION check_tipo_libro() RETURNS TRIGGER AS $$
   BEGIN
     IF (SELECT tipo FROM articulo WHERE id = NEW.idArticulo) != 'libro' THEN
-      RAISE EXCEPTION 'Error: el articulo a insertar en la tabla ''libro'' no posee el tipo ''libro''';
+      RAISE EXCEPTION 'el articulo a insertar en la tabla ''libro'' no posee el tipo ''libro''';
     END IF;
     RETURN NEW;
   END;
@@ -126,7 +126,7 @@ CREATE TABLE materialPeriodico (
 CREATE OR REPLACE FUNCTION check_tipo_materialPeriodico() RETURNS TRIGGER AS $$
   BEGIN
     IF (SELECT tipo FROM articulo WHERE id = NEW.idArticulo) != 'materialPeriodico' THEN
-      RAISE EXCEPTION 'Error: el articulo a insertar en la tabla ''materialPeriodico'' no posee el tipo ''materialPeriodico''';
+      RAISE EXCEPTION 'el articulo a insertar en la tabla ''materialPeriodico'' no posee el tipo ''materialPeriodico''';
     END IF;
     RETURN NEW;
   END;
@@ -153,7 +153,7 @@ CREATE TABLE materialAudiovisual (
 CREATE OR REPLACE FUNCTION check_tipo_materialAudiovisual() RETURNS TRIGGER AS $$
   BEGIN
     IF (SELECT tipo FROM articulo WHERE id = NEW.idArticulo) != 'materialAudiovisual' THEN
-      RAISE EXCEPTION 'Error: el articulo a insertar en la tabla ''materialAudiovisual'' no posee el tipo ''materialAudiovisual''';
+      RAISE EXCEPTION 'el articulo a insertar en la tabla ''materialAudiovisual'' no posee el tipo ''materialAudiovisual''';
     END IF;
     RETURN NEW;
   END;
@@ -281,10 +281,10 @@ CREATE TABLE telefonoUsuario (
 CREATE OR REPLACE FUNCTION un_idUsuario_debe_ser_nulo() RETURNS TRIGGER AS $$
   BEGIN
     IF NEW.idUsuarioAdulto IS NULL AND NEW.idUsuarioMenor IS NULL THEN
-      RAISE EXCEPTION 'Error: un identificador de usuario (adulto o menor) debe tener un valor no nulo';
+      RAISE EXCEPTION 'un identificador de usuario (adulto o menor) debe tener un valor no nulo';
     END IF;
     IF NEW.idUsuarioAdulto IS NOT NULL AND NEW.idUsuarioMenor IS NOT NULL THEN
-      RAISE EXCEPTION 'Error: un identificador de usuario (adulto o menor) debe tener un valor nulo';
+      RAISE EXCEPTION 'un identificador de usuario (adulto o menor) debe tener un valor nulo';
     END IF;
     RETURN NEW;
   END;
@@ -351,7 +351,7 @@ CREATE OR REPLACE FUNCTION idUsuario_o_dniTrabajador_debe_ser_nulo() RETURNS TRI
       (NEW.idUsuarioAdulto IS NULL AND NEW.idUsuarioMenor IS NOT NULL AND NEW.dniTrabajador IS NULL) OR
       (NEW.idUsuarioAdulto IS NOT NULL AND NEW.idUsuarioMenor IS NULL AND NEW.dniTrabajador IS NULL)
     ) THEN
-      RAISE EXCEPTION 'Error: solamente uno de los campos ''idUsuarioMenor'', ''idUsuarioAdulto'' y ''dniTrabajador'' debe tener un valor y los otros no';
+      RAISE EXCEPTION 'solamente uno de los campos ''idUsuarioMenor'', ''idUsuarioAdulto'' y ''dniTrabajador'' debe tener un valor y los otros no';
     END IF;
     RETURN NEW;
   END;
@@ -384,7 +384,7 @@ BEGIN
         WHERE dniTrabajador = NEW.dniTrabajador
         AND (NEW.fchInicio, NEW.fchFin) OVERLAPS (fchInicio, fchFin)
     ) THEN
-        RAISE EXCEPTION 'Error: un mismo trabajador no puede haber trabajado o trabajar en periodos coincidentes';
+        RAISE EXCEPTION 'un mismo trabajador no puede haber trabajado o trabajar en periodos coincidentes';
     END IF;
     RETURN NEW;
 END;
@@ -402,8 +402,9 @@ CREATE OR REPLACE FUNCTION check_no_mas_de_2_periodos_con_fchFin_null()
 RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.fchFin IS NULL AND (SELECT COUNT(*) FROM horario WHERE dniTrabajador = NEW.dniTrabajador AND fchFin = NULL) >= 1 THEN
-    RAISE EXCEPTION 'Error: un empleado no puede tener más de un periodo no finalizado';
+    RAISE EXCEPTION 'un empleado no puede tener más de un periodo no finalizado';
   END IF;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -461,7 +462,7 @@ RETURNS TRIGGER AS $$
     IF (
       NEW.fchInicio < (SELECT fchHoraRegistro from trabajador WHERE dni = NEW.dniTrabajador)
     ) THEN
-      RAISE EXCEPTION 'Init Date must be greater or equal than worker register date';
+      RAISE EXCEPTION 'la fecha de inicio de un periodo debe ser mayor a la fecha de registro del trabajador';
     END IF;
     RETURN NEW;
   END;
@@ -539,13 +540,13 @@ CREATE OR REPLACE FUNCTION numero_prestaciones_menor_o_igual_a_5_o_7() RETURNS T
           IF (
             7 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
           ) THEN
-          RAISE EXCEPTION 'Error: el numero de prestaciones vigentes permitidas para un usuario adulto estudiante debe ser 7 o menos';
+          RAISE EXCEPTION 'el numero de prestaciones vigentes permitidas para un usuario adulto estudiante debe ser 7 o menos';
           END IF;
       ELSE -- Si es adulto no estudiante (prestaciones <= 5)
         IF (
             5 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
           ) THEN
-          RAISE EXCEPTION 'Error: el numero de prestaciones vigentes permitidas para un usuario adulto no estudiante debe ser 5 o menos';
+          RAISE EXCEPTION 'el numero de prestaciones vigentes permitidas para un usuario adulto no estudiante debe ser 5 o menos';
           END IF;
       END IF;
     END IF;
@@ -553,7 +554,7 @@ CREATE OR REPLACE FUNCTION numero_prestaciones_menor_o_igual_a_5_o_7() RETURNS T
       IF (
         7 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
       ) THEN
-        RAISE EXCEPTION 'Error: el numero de prestaciones vigentes permitidas para un usuario menor debe ser 7 o menos';
+        RAISE EXCEPTION 'el numero de prestaciones vigentes permitidas para un usuario menor debe ser 7 o menos';
       END IF;
     END IF;
     
