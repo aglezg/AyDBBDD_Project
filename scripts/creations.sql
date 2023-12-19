@@ -86,12 +86,12 @@ EXECUTE FUNCTION actualiza_edad();
 
 -- Tabla de libros
 CREATE TABLE libro (
-  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE CASCADE,
   editorial VARCHAR(50) NOT NULL,
   numPaginas INT NOT NULL CHECK (numPaginas > 0),
   estilo VARCHAR(9) NOT NULL CHECK (estilo IN ('Narrativo', 'Poetico', 'Dramatico', 'Epico', 'Lirico', 'Didactico', 'Satirico')),
   sinopsis TEXT,
-  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE SET NULL,
   PRIMARY KEY (idArticulo)
 );
 
@@ -115,7 +115,7 @@ EXECUTE FUNCTION check_tipo_libro();
 
 -- Tabla de materiales periódicos (periódicos o revistas)
 CREATE TABLE materialPeriodico (
-  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE CASCADE,
   editorial VARCHAR(50) NOT NULL,
   numPaginas INT NOT NULL CHECK (numPaginas > 0),
   tipo VARCHAR(9) NOT NULL CHECK (tipo IN ('Periodico', 'Revista')),
@@ -142,7 +142,7 @@ EXECUTE FUNCTION check_tipo_materialPeriodico();
 
 -- Tabla de materiales audiovisuales (peliculas, documentales o series)
 CREATE TABLE materialAudiovisual (
-  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE CASCADE,
   duracion INTERVAL CHECK (duracion > '00:00:00'),
   categoria VARCHAR(10) NOT NULL CHECK (categoria IN ('Pelicula', 'Documental', 'Serie')),
   tipo VARCHAR(10) NOT NULL CHECK (tipo IN ('DVD', 'CD', 'CD_ROM', 'VHS', 'Audiolibro')),
@@ -170,9 +170,7 @@ EXECUTE FUNCTION check_tipo_materialAudiovisual();
 -- Tabla de los posibles autores de materiales audiovisuales
 CREATE TABLE autor_materialAudiovisual (
   idMaterialAudiovisual INT REFERENCES materialAudiovisual(idArticulo) ON UPDATE CASCADE ON DELETE CASCADE,
-  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  PRIMARY KEY (idMaterialAudiovisual, idAutor)
-);
+  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE SET NULL);
 
 
 -- Tabla de trabajadores
@@ -572,18 +570,25 @@ EXECUTE PROCEDURE numero_prestaciones_menor_o_igual_a_5_o_7();
 -- Función que disminuye el campo 'stock' de un artículo en 1 unidad
 CREATE OR REPLACE FUNCTION disminuye_articulo_stock() RETURNS TRIGGER AS $$
   BEGIN
-    UPDATE articulo
-    SET stock = stock - 1
-    WHERE id = NEW.idArticulo;
-
+    IF NEW.vigente = true THEN
+      UPDATE articulo
+      SET stock = stock - 1
+      WHERE id = NEW.idArticulo;
+    END IF;
     RETURN NEW;
   END;
 $$ LANGUAGE plpgsql;
 
+
 -- Función que aumenta el campo 'stock' de un artículo en 1 unidad
 CREATE OR REPLACE FUNCTION aumenta_articulo_stock() RETURNS TRIGGER AS $$
   BEGIN
-    IF OLD.vigente = TRUE AND (NEW.vigente = FALSE OR NEW.vigente == NULL) THEN
+    IF TG_OP = 'UPDATE' AND OLD.vigente = TRUE AND (NEW.vigente = FALSE) THEN
+      UPDATE articulo
+      SET stock = stock + 1
+      WHERE id = OLD.idArticulo;
+    END IF;
+    IF TG_OP = 'DELETE' AND OLD.vigente = TRUE THEN
       UPDATE articulo
       SET stock = stock + 1
       WHERE id = OLD.idArticulo;
