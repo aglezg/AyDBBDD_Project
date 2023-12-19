@@ -25,8 +25,8 @@ def getAllAuthors():
     from authors import returnAllAuthors
     return returnAllAuthors()
 
-@app.route('/mylibrary/autores/<int:id>', methods=['GET'])
-def getAnAuthor(id):
+@app.route('/mylibrary/autores/id/<int:id>', methods=['GET'])
+def getAnAuthorById(id):
     from authors import returnAuthorByID
     return returnAuthorByID(id)
 
@@ -35,21 +35,37 @@ def postAnAuthor():
     from authors import createAuthor
     return createAuthor()
 
-@app.route('/mylibrary/autores/<int:id>', methods=['PATCH'])
+@app.route('/mylibrary/autores/id/<int:id>', methods=['PATCH'])
 def patchAnAuthor(id):
     from authors import updateAuthor
     return updateAuthor(id)
 
-@app.route('/mylibrary/autores/<int:id>', methods=['DELETE'])
+@app.route('/mylibrary/autores/id/<int:id>', methods=['DELETE'])
 def deleteAnAuthor(id):
     from authors import removeAuthorByID
     return removeAuthorByID(id)
 
 
 # Article routes
+@app.route('/mylibrary/articulos', methods=['GET'])
+def getAllArticles():
+    from articles import returnAllArticles
+    return returnAllArticles()
 
+@app.route('/mylibrary/articulos/id/<int:id>', methods=['GET'])
+def getAnArticleById(id):
+    from articles import returnArticleByID
+    return returnArticleByID(id)
 
+@app.route('/mylibrary/articulos/titulo/<string:title>', methods=['GET'])
+def getAnArticleByTitle(title):
+    from articles import returnArticleByTitle
+    return returnArticleByTitle(title)
 
+@app.route('/mylibrary/articulos/id/<int:id>', methods = ['DELETE'])
+def deleteAnArticle(id):
+    from articles import removeArticleByID
+    return removeArticleByID(id)
 
 
 
