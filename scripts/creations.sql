@@ -536,13 +536,13 @@ CREATE OR REPLACE FUNCTION numero_prestaciones_menor_o_igual_a_5_o_7() RETURNS T
           TRUE = (SELECT estudiante FROM usuarioAdulto WHERE id = NEW.idUsuarioAdulto) -- Si es adulto estudiante (prestaciones <= 7)
         ) THEN
           IF (
-            7 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
+            7 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioAdulto = NEW.idUsuarioAdulto AND vigente = TRUE GROUP BY idUsuarioAdulto) 
           ) THEN
           RAISE EXCEPTION 'el numero de prestaciones vigentes permitidas para un usuario adulto estudiante debe ser 7 o menos';
           END IF;
       ELSE -- Si es adulto no estudiante (prestaciones <= 5)
         IF (
-            5 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioMenor = NEW.idUsuarioMenor AND vigente = TRUE GROUP BY idUsuarioMenor) 
+            5 <= (SELECT COUNT(*) FROM prestacion WHERE idUsuarioAdulto = NEW.idUsuarioAdulto AND vigente = TRUE GROUP BY idUsuarioAdulto) 
           ) THEN
           RAISE EXCEPTION 'el numero de prestaciones vigentes permitidas para un usuario adulto no estudiante debe ser 5 o menos';
           END IF;
@@ -570,18 +570,25 @@ EXECUTE PROCEDURE numero_prestaciones_menor_o_igual_a_5_o_7();
 -- Función que disminuye el campo 'stock' de un artículo en 1 unidad
 CREATE OR REPLACE FUNCTION disminuye_articulo_stock() RETURNS TRIGGER AS $$
   BEGIN
-    UPDATE articulo
-    SET stock = stock - 1
-    WHERE id = NEW.idArticulo;
-
+    IF NEW.vigente = true THEN
+      UPDATE articulo
+      SET stock = stock - 1
+      WHERE id = NEW.idArticulo;
+    END IF;
     RETURN NEW;
   END;
 $$ LANGUAGE plpgsql;
 
+
 -- Función que aumenta el campo 'stock' de un artículo en 1 unidad
 CREATE OR REPLACE FUNCTION aumenta_articulo_stock() RETURNS TRIGGER AS $$
   BEGIN
-    IF OLD.vigente = TRUE AND (NEW.vigente = FALSE OR NEW.vigente == NULL) THEN
+    IF TG_OP = 'UPDATE' AND OLD.vigente = TRUE AND (NEW.vigente = FALSE) THEN
+      UPDATE articulo
+      SET stock = stock + 1
+      WHERE id = OLD.idArticulo;
+    END IF;
+    IF TG_OP = 'DELETE' AND OLD.vigente = TRUE THEN
       UPDATE articulo
       SET stock = stock + 1
       WHERE id = OLD.idArticulo;
