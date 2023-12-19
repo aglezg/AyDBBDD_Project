@@ -91,7 +91,7 @@ CREATE TABLE libro (
   numPaginas INT NOT NULL CHECK (numPaginas > 0),
   estilo VARCHAR(9) NOT NULL CHECK (estilo IN ('Narrativo', 'Poetico', 'Dramatico', 'Epico', 'Lirico', 'Didactico', 'Satirico')),
   sinopsis TEXT,
-  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE SET NULL,
   PRIMARY KEY (idArticulo)
 );
 
@@ -170,9 +170,7 @@ EXECUTE FUNCTION check_tipo_materialAudiovisual();
 -- Tabla de los posibles autores de materiales audiovisuales
 CREATE TABLE autor_materialAudiovisual (
   idMaterialAudiovisual INT REFERENCES materialAudiovisual(idArticulo) ON UPDATE CASCADE ON DELETE CASCADE,
-  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-  PRIMARY KEY (idMaterialAudiovisual, idAutor)
-);
+  idAutor INT REFERENCES autor(id) ON UPDATE CASCADE ON DELETE SET NULL);
 
 
 -- Tabla de trabajadores
