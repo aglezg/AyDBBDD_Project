@@ -19,8 +19,8 @@ def returnAllAuthors():
                      'nombre': row[1],
                      'apellido1': row[2],
                      'apellido2': row[3],
-                     'fecha_nacimiento': row[4],
-                     'fecha_muerte': row[5],
+                     'fchNacimiento': row[4],
+                     'fchMuerte': row[5],
                      'sexo': row[6],
                      'edad': row[7]} for row in author]
     
@@ -54,8 +54,8 @@ def returnAuthorByID(id):
                      'nombre': author[1],
                      'apellido1': author[2],
                      'apellido2': author[3],
-                     'fecha_nacimiento': author[4],
-                     'fecha_muerte': author[5],
+                     'fchNacimiento': author[4],
+                     'fchMuerte': author[5],
                      'sexo': author[6],
                      'edad': author[7]})
 
@@ -109,8 +109,8 @@ def createAuthor():
                     'nombre': author[1],
                     'apellido1': author[2],
                     'apellido2': author[3],
-                    'fecha_nacimiento': author[4],
-                    'fecha_muerte': author[5],
+                    'fchNacimiento': author[4],
+                    'fchMuerte': author[5],
                     'sexo': author[6],
                     'edad': author[7]}), 201
 
@@ -189,8 +189,8 @@ def updateAuthor(id):
                     'nombre': author[1],
                     'apellido1': author[2],
                     'apellido2': author[3],
-                    'fecha_nacimiento': author[4],
-                    'fecha_muerte': author[5],
+                    'fchNacimiento': author[4],
+                    'fchMuerte': author[5],
                     'sexo': author[6],
                     'edad': author[7]}), 200
 
@@ -221,7 +221,7 @@ def removeAuthorByID(id):
                      'nombre': author[1],
                      'apellido1': author[2],
                      'apellido2': author[3],
-                     'fecha_nacimiento': author[4],
-                     'fecha_muerte': author[5],
+                     'fchNacimiento': author[4],
+                     'fchMuerte': author[5],
                      'sexo': author[6],
                      'edad': author[7]}})
