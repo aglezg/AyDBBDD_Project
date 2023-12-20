@@ -164,3 +164,5 @@ VALUES
   (9, '78901234D', NULL, 2),
   (10, '78901234D', NULL, 2),
   (11, '78901234D', NULL, NULL);
+
+  -- probar trigger de hoario para que no hayan dos periodos para un mismo trabajador que no hayan finalizado ('34567890F', '2022-06-01', NULL),('34567890F', '2022-06-01', NULL),
