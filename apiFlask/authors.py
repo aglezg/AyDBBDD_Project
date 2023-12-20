@@ -189,14 +189,17 @@ def updateAuthor(id):
     conn.close()
     
     # Return results
-    return jsonify({'id': author[0],
-                    'nombre': author[1],
-                    'apellido1': author[2],
-                    'apellido2': author[3],
-                    'fchNacimiento': author[4],
-                    'fchMuerte': author[5],
-                    'sexo': author[6],
-                    'edad': author[7]}), 200
+    if author:
+        return jsonify({'id': author[0],
+                        'nombre': author[1],
+                        'apellido1': author[2],
+                        'apellido2': author[3],
+                        'fchNacimiento': author[4],
+                        'fchMuerte': author[5],
+                        'sexo': author[6],
+                        'edad': author[7]}), 200
+    else:
+        return jsonify({"mensaje": "ningun cambio efectuado"}), 200
 
 # Remove an author by ID
 def removeAuthorByID(id):

@@ -4,6 +4,7 @@ from flask import jsonify, request
 from App import get_db_connection
 import re
 from psycopg2 import Error
+from datetime import datetime
 
 
 # Return All deliveries
@@ -240,3 +241,66 @@ def createDelivery():
                      'fchFin': delivery[6],
                      'fchDevolucion': delivery[7],
                      'vigente': delivery[8]}), 201
+
+# Create a delivery
+def updateADeliveryReturnDate(id):
+    # Get data from the request
+    data = request.get_json()
+
+    # Connect to DB
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Validate data
+    cur.execute('SELECT * FROM prestacion WHERE id = %s', (id,))
+    deliveryData = cur.fetchone()
+    if not deliveryData:
+        return jsonify({'error': f'la prestacion introducida no existe'}), 404
+
+    fchInicio = deliveryData[5]
+    if data.get('fchDevolucion') is not None and datetime.strptime(data.get('fchDevolucion'), '%Y-%m-%d').date() < fchInicio:
+        return jsonify({'error': 'la fecha de devolución debe ser mayor que la fecha de inicio de periodo'}), 400
+    
+    # Build the SQL query dynamically based on provided values
+    query = 'UPDATE prestacion SET '
+    parameters = []
+    
+    if data.get('fchDevolucion') is not None:
+        query += 'fchDevolucion = %s, '
+        parameters.append(data.get('fchDevolucion'))
+
+    delivery = None
+    if parameters:
+        # Remove the trailing comma and space
+        query = query.rstrip(', ')
+        # Add the WHERE clause for the specific author_id
+        query += ' WHERE id = %s RETURNING *;'
+        parameters.append(id)
+        # Execute the dynamically built query with parameters
+        try:
+            cur.execute(query, tuple(parameters))
+            delivery = cur.fetchone()
+        except Error as e:
+            error_message = str(e)
+            return jsonify({'error': error_message}), 400
+
+    # Commit the transaction
+    conn.commit()
+
+    # Disconnect from DB
+    cur.close()
+    conn.close()
+    
+    # Return results
+    if delivery:
+        return jsonify({'id': delivery[0],
+                        'idArticulo': delivery[1],
+                        'dniTrabajador': delivery[2],
+                        'idUsuarioAdulto': delivery[3],
+                        'idUsuarioMenor': delivery[4],
+                        'fchInicio': delivery[5],
+                        'fchFin': delivery[6],
+                        'fchDevolucion': delivery[7],
+                        'vigente': delivery[8]}), 201
+    else:
+        return jsonify({'mensaje': 'ningun cambio efectuado'}), 200

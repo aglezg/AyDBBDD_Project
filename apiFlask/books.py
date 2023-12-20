@@ -324,19 +324,22 @@ def updateBook(id):
     conn.close()
     
     # Return results
-    return jsonify({'id': book[0],
-                     'tipo': book[1],
-                     'titulo': book[2],
-                     'subtitulo': book[3],
-                     'fchPublicacion': book[4],
-                     'portada': base64.b64encode(book[5]).decode('utf-8') if book[5] else None,
-                     'stock': book[6],
-                     'disponible': book[7],
-                     'editorial': book[9],
-                     'numPaginas': book[10],
-                     'estilo': book[11],
-                     'sinopsis': book[12],
-                     'idAutor': book[13]}), 200
+    if book:
+        return jsonify({'id': book[0],
+                        'tipo': book[1],
+                        'titulo': book[2],
+                        'subtitulo': book[3],
+                        'fchPublicacion': book[4],
+                        'portada': base64.b64encode(book[5]).decode('utf-8') if book[5] else None,
+                        'stock': book[6],
+                        'disponible': book[7],
+                        'editorial': book[9],
+                        'numPaginas': book[10],
+                        'estilo': book[11],
+                        'sinopsis': book[12],
+                        'idAutor': book[13]}), 200
+    else:
+        return jsonify({'mensaje': 'ningun cambio efectuado'}), 200
 
 # Remove an book by ID
 def removeBookByID(id):

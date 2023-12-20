@@ -116,6 +116,7 @@ def getWorkerByDNI(dni):
     from workers import returnWorkerByDNI
     return returnWorkerByDNI(dni)
 
+
 # Delivery routes
 @app.route('/mylibrary/prestaciones', methods=['GET'])
 def getAllDeliveries():
@@ -142,8 +143,10 @@ def postADelivery():
     from deliveries import createDelivery
     return createDelivery()
 
-
-
+@app.route('/mylibrary/prestaciones/id/<int:id>', methods=['PATCH'])
+def patchADeliveryReturnDate(id):
+    from deliveries import updateADeliveryReturnDate
+    return updateADeliveryReturnDate(id)
 
 
 
