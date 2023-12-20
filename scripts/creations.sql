@@ -564,7 +564,7 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger para el evento de inserción o actualización en la tabla 'prestacion' para el máximo de prestaciones permitidas
 CREATE TRIGGER comprobacion_numero_prestaciones
-BEFORE INSERT OR UPDATE 
+BEFORE INSERT
 ON prestacion
 FOR EACH ROW 
 EXECUTE PROCEDURE numero_prestaciones_menor_o_igual_a_5_o_7();
