@@ -383,4 +383,7 @@ VALUES
   INSERT INTO prestacion (idArticulo, dniTrabajador, idUsuarioAdulto, idUsuarioMenor)
 VALUES 
 (5, '78901234D', 5, NULL),
+(5, '78901234D', 5, NULL),
+(5, '78901234D', 5, NULL),
+(5, '78901234D', 5, NULL),
 (5, '78901234D', 5, NULL);
