@@ -116,12 +116,31 @@ def getWorkerByDNI(dni):
     from workers import returnWorkerByDNI
     return returnWorkerByDNI(dni)
 
+# Delivery routes
+@app.route('/mylibrary/prestaciones', methods=['GET'])
+def getAllDeliveries():
+    from deliveries import returnAllDeliveries
+    return returnAllDeliveries()
 
+@app.route('/mylibrary/prestaciones/id/<int:id>', methods=['GET'])
+def getADeliveryById(id):
+    from deliveries import returnADeliveryById
+    return returnADeliveryById(id)
 
+@app.route('/mylibrary/prestaciones/articulo/id/<int:id>', methods=['GET'])
+def getADeliveryByArticleId(id):
+    from deliveries import returnAllDeliveryByArticleId
+    return returnAllDeliveryByArticleId(id)
 
+@app.route('/mylibrary/prestaciones/trabajador/dni/<string:dni>', methods=['GET'])
+def getADeliveryByWorkerDNI(dni):
+    from deliveries import returnAllDeliveryByWorkerDNI
+    return returnAllDeliveryByWorkerDNI(dni)
 
-
-
+@app.route('/mylibrary/prestaciones', methods=['POST'])
+def postADelivery():
+    from deliveries import createDelivery
+    return createDelivery()
 
 
 
@@ -254,83 +273,6 @@ def getMinorUserByID(id):
                      'edad': minor_user[7],
                      'id_tarjeta_socio': minor_user[8]})
 
-
-
-# Get all deliveries
-@app.route('/mylibrary/deliveries', methods=['GET'])
-def getAllDeliveries():
-
-    # Connect to DB
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Execute queries
-    cur.execute('SELECT * FROM prestacion;',)
-    deliveries = cur.fetchall()
-
-
-    # Convert to JSON format
-    deliveries_list = []
-
-    # Check what user id is null
-    for row in deliveries:
-        if (row[3] is not None):
-            deliveries_list.append({'id': row[0],
-                            'id_articulo': row[1],
-                            'dni_trabajador': row[2],
-                            'usuario_adulto_id': row[3],
-                            'fecha_inicio': row[5],
-                            'fecha_fin': row[6],
-                            'fecha_devolucion': row[7],
-                            'vigente': row[8]})
-        else:
-            deliveries_list.append({'id': row[0],
-                            'id_articulo': row[1],
-                            'dni_trabajador': row[2],
-                            'usuario_menor_id': row[4],
-                            'fecha_inicio': row[5],
-                            'fecha_fin': row[6],
-                            'fecha_devolucion': row[7],
-                            'vigente': row[8]})
-
-    # Disconnect from DB
-    cur.close()
-    conn.close()
-
-    # Return results
-    return jsonify(deliveries_list)
-
-
-# Get a delivery by ID
-@app.route('/mylibrary/deliveries/<int:id>', methods=['GET'])
-def getDeliveryByID(id):
-
-    # Connect to DB
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    # Execute queries
-    cur.execute('SELECT * FROM prestacion WHERE id = %s;', (id,))
-    delivery = cur.fetchone()
-
-    # Disconnect from DB
-    cur.close()
-    conn.close()
-
-    # Check if worker is not found
-    if delivery is None:
-        return jsonify({'error': f'Delivery with ID {id} not found'}), 404
-
-    # Return results
-    return jsonify({'id': delivery[0],
-                     'id_articulo': delivery[1],
-                     'dni_trabajador': delivery[2],
-                     'id_usuario_adulto': delivery[3],
-                     'id_usuario_menor': delivery[4],
-                     'fecha_inicio': delivery[5],
-                     'fecha_fin': delivery[6],
-                     'fecha_devolucion': delivery[7],
-                     'vigente': delivery[8]})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
