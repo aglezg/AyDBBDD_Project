@@ -1,2 +1,3 @@
+apiFlask/__pycache__
 tester.sql
-./venv/
+venv
