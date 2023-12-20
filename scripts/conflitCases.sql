@@ -134,3 +134,33 @@ INSERT INTO prestacion (idArticulo, dniTrabajador, idUsuarioAdulto, idUsuarioMen
 VALUES 
   (1, '12345678A', 1, 1, '2022-10-01', '2022-10-15', NULL);
 
+-- Un estudiante no puede tener tener mas de 7 prestaciones vigentes, no puede sacar mas de 7 articulos de la biblioteca
+INSERT INTO prestacion (idArticulo, dniTrabajador, idUsuarioAdulto, idUsuarioMenor)
+VALUES 
+  (5, '78901234D', 5, NULL),
+  (6, '78901234D', 5, NULL),
+  (7, '78901234D', 5, NULL),
+  (8, '78901234D', 5, NULL),
+  (9, '78901234D', 5, NULL),
+  (10, '78901234D', 5, NULL),
+  (11, '78901234D', 5, NULL);
+
+-- Un usuario adulto no puede tener mas de 5 prestaciones vigentes, no puede sacar mas de 5 articulos de la biblioteca
+INSERT INTO prestacion (idArticulo, dniTrabajador, idUsuarioAdulto, idUsuarioMenor)
+VALUES 
+  (5, '78901234D', 4, NULL),
+  (6, '78901234D', 4, NULL),
+  (7, '78901234D', 4, NULL),
+  (8, '78901234D', 4, NULL),
+  (11, '78901234D', 4, NULL);
+
+-- Un usuario menor no puede sacar mas de 7 prestaciones vigentes, no puede sacar mas de 5 articulos de la biblioteca
+INSERT INTO prestacion (idArticulo, dniTrabajador, idUsuarioAdulto, idUsuarioMenor)
+VALUES 
+  (5, '78901234D', NULL, 2),
+  (6, '78901234D', NULL, 2),
+  (7, '78901234D', NULL, 2),
+  (8, '78901234D', NULL, 2),
+  (9, '78901234D', NULL, 2),
+  (10, '78901234D', NULL, 2),
+  (11, '78901234D', NULL, NULL);
