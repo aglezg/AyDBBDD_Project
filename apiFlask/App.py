@@ -99,6 +99,10 @@ def patchABook(id):
     from books import updateBook
     return updateBook(id)
 
+@app.route('/mylibrary/articulos/libros/id/<int:id>', methods=['DELETE'])
+def deleteABook(id):
+    from books import removeBookByID
+    return removeBookByID(id)
 
 
 

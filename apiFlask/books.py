@@ -3,6 +3,7 @@
 from flask import jsonify, request
 from App import get_db_connection
 import base64
+from articles import removeArticleByID
 
 # Return all books
 def returnAllBooks():
@@ -211,7 +212,7 @@ def createBook():
                      'sinopsis': book[12],
                      'idAutor': book[13]}), 201
 
-# Update an book by ID
+# Update a book by ID
 def updateBook(id):
     # Get data from the request
     data = request.get_json()
@@ -240,7 +241,7 @@ def updateBook(id):
     cur.execute('SELECT * FROM libro WHERE idArticulo = %s;', (id,))
     bookIdIfExists = cur.fetchone()
     if not bookIdIfExists:
-        return jsonify({'error': f'El libro que se intenta actualizar no existe'}), 400
+        return jsonify({'error': f'El libro que se intenta actualizar no existe'}), 404
     
     # Build the SQL query dynamically based on provided values (articulo)
     query = 'UPDATE articulo SET '
@@ -336,3 +337,22 @@ def updateBook(id):
                      'estilo': book[11],
                      'sinopsis': book[12],
                      'idAutor': book[13]}), 200
+
+# Remove an book by ID
+def removeBookByID(id):
+    # Connect to DB
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Validate if the article is a book
+    cur.execute('SELECT * FROM libro WHERE idArticulo = %s;', (id,))
+    bookIdIfExists = cur.fetchone()
+    if not bookIdIfExists:
+        return jsonify({'error': f'El articulo a borrar no es un libro o no existe'}), 400
+    
+    # Disconnect from DB
+    cur.close()
+    conn.close()
+
+    # Execute queries and return results
+    return removeArticleByID(id)
