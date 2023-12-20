@@ -89,6 +89,29 @@ def getABookByAutorId(id):
     from books import returnBookByAutorId
     return returnBookByAutorId(id)
 
+@app.route('/mylibrary/articulos/libros', methods=['POST'])
+def postABook():
+    from books import createBook
+    return createBook()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Get all adult-users
 @app.route('/mylibrary/adult_users', methods=['GET'])
