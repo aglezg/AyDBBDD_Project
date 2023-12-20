@@ -154,6 +154,10 @@ def createBook():
     estilo = data.get('estilo')
     idAutor = data.get('idAutor')
 
+    # Connect to DB
+    conn = get_db_connection()
+    cur = conn.cursor()
+
     # Validate data
     if titulo is None or stock is None or editorial is None or numPaginas is None:
         return jsonify({'error': 'el titulo, el stock, la editorial, el numero de paginas y el estilo del libro deben especificarse'}), 400
@@ -168,9 +172,11 @@ def createBook():
     if data.get('estilo') is not None and data.get('estilo') not in allowed_estilos:
         return jsonify({'error': f'El valor de estilo debe ser uno de los siguientes: {", ".join(allowed_estilos)}'}), 400
     
-    # Connect to DB
-    conn = get_db_connection()
-    cur = conn.cursor()
+
+    cur.execute('SELECT * FROM autor WHERE id = %s;', (idAutor,))
+    autorData = cur.fetchall()
+    if not autorData:
+        return jsonify({'error': f'El autor del libro que se intenta introducir no existe'}), 400
     
     # Execute queries
     cur.execute('INSERT INTO articulo (tipo, titulo, subtitulo, fchpublicacion, portada, stock) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;', (tipo, titulo, subtitulo, fchPublicacion, portada, stock))
