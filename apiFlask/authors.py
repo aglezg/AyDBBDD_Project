@@ -137,7 +137,11 @@ def updateAuthor(id):
     if data.get('sexo') is not None and data.get('sexo') not in allowed_sexos:
         return jsonify({'error': f'El valor de sexo debe ser uno de los siguientes: {", ".join(allowed_sexos)}'}), 400
     
-    
+    cur.execute('SELECT * FROM autor WHERE id = %s;', (id,))
+    autorIfExists = cur.fetchone()
+    if not autorIfExists:
+        return jsonify({'error': f'El autor que se intenta actualizar no existe'}), 400
+
     # Build the SQL query dynamically based on provided values
     query = 'UPDATE autor SET '
     parameters = []
@@ -166,16 +170,16 @@ def updateAuthor(id):
         query += 'sexo = %s, '
         parameters.append(data.get('sexo'))
     
-    # Remove the trailing comma and space
-    query = query.rstrip(', ')
-    
-    # Add the WHERE clause for the specific author_id
-    query += ' WHERE id = %s RETURNING *;'
-    parameters.append(id)
-   
-    # Execute the dynamically built query with parameters
-    cur.execute(query, tuple(parameters))
-    author = cur.fetchone()
+    author = None
+    if parameters:
+        # Remove the trailing comma and space
+        query = query.rstrip(', ')
+        # Add the WHERE clause for the specific author_id
+        query += ' WHERE id = %s RETURNING *;'
+        parameters.append(id)
+        # Execute the dynamically built query with parameters
+        cur.execute(query, tuple(parameters))
+        author = cur.fetchone()
     
     # Commit the transaction
     conn.commit()

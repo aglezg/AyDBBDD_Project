@@ -10,7 +10,7 @@ def get_db_connection():
             host='localhost',
         	database='mylibrary',
 		    user='postgres',
-            password='adbd2324')
+            password='1234')
     return conn
 
 # Default route
@@ -94,7 +94,10 @@ def postABook():
     from books import createBook
     return createBook()
 
-
+@app.route('/mylibrary/articulos/libros/id/<int:id>', methods=['PATCH'])
+def patchABook(id):
+    from books import updateBook
+    return updateBook(id)
 
 
 

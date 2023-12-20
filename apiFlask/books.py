@@ -172,11 +172,11 @@ def createBook():
     if data.get('estilo') is not None and data.get('estilo') not in allowed_estilos:
         return jsonify({'error': f'El valor de estilo debe ser uno de los siguientes: {", ".join(allowed_estilos)}'}), 400
     
-
-    cur.execute('SELECT * FROM autor WHERE id = %s;', (idAutor,))
-    autorData = cur.fetchall()
-    if not autorData:
-        return jsonify({'error': f'El autor del libro que se intenta introducir no existe'}), 400
+    if idAutor is not None:
+        cur.execute('SELECT * FROM autor WHERE id = %s;', (idAutor,))
+        autorData = cur.fetchall()
+        if not autorData:
+            return jsonify({'error': f'El autor del libro que se intenta introducir no existe'}), 400
     
     # Execute queries
     cur.execute('INSERT INTO articulo (tipo, titulo, subtitulo, fchpublicacion, portada, stock) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;', (tipo, titulo, subtitulo, fchPublicacion, portada, stock))
@@ -210,3 +210,129 @@ def createBook():
                      'estilo': book[11],
                      'sinopsis': book[12],
                      'idAutor': book[13]}), 201
+
+# Update an book by ID
+def updateBook(id):
+    # Get data from the request
+    data = request.get_json()
+    
+    # Connect to DB
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Validate data    
+    if data.get('stock') is not None and data.get('stock') < 0:
+        return jsonify({'error': 'el stock de un articulo no puede ser negativo'})
+
+    if data.get('numPaginas') is not None and data.get('numPaginas') < 0:
+        return jsonify({'error': 'el numero de paginas de un articulo no puede ser negativo'})
+
+    allowed_estilos = ['Narrativo', 'Poetico', 'Dramatico', 'Epico', 'Lirico', 'Didactico', 'Satirico']
+    if data.get('estilo') is not None and data.get('estilo') not in allowed_estilos:
+        return jsonify({'error': f'El valor de estilo debe ser uno de los siguientes: {", ".join(allowed_estilos)}'}), 400
+    
+    if data.get('idAutor') is not None:
+        cur.execute('SELECT * FROM autor WHERE id = %s;', (data.get('idAutor'),))
+        autorData = cur.fetchall()
+        if not autorData:
+            return jsonify({'error': f'El autor del libro que se intenta introducir no existe'}), 400
+    
+    cur.execute('SELECT * FROM libro WHERE idArticulo = %s;', (id,))
+    bookIdIfExists = cur.fetchone()
+    if not bookIdIfExists:
+        return jsonify({'error': f'El libro que se intenta actualizar no existe'}), 400
+    
+    # Build the SQL query dynamically based on provided values (articulo)
+    query = 'UPDATE articulo SET '
+    parameters = []
+    
+    if data.get('titulo') is not None:
+        query += 'titulo = %s, '
+        parameters.append(data.get('titulo'))
+
+    if data.get('subtitulo') is not None:
+        query += 'subtitulo = %s, '
+        parameters.append(data.get('subtitulo'))
+
+    if data.get('fchPublicacion') is not None:
+        query += 'fchPublicacion = %s, '
+        parameters.append(data.get('fchPublicacion'))
+
+    if data.get('portada') is not None:
+        query += 'portada = %s, '
+        parameters.append(data.get('portada'))
+
+    if data.get('stock') is not None:
+        query += 'stock = %s, '
+        parameters.append(data.get('stock'))
+   
+    # Execute the dynamically built query with parameters
+    if parameters:
+        # Remove the trailing comma and space
+        query = query.rstrip(', ')
+        # Add the WHERE clause for the specific book_id
+        query += ' WHERE id = %s RETURNING id;'
+        parameters.append(id)
+        cur.execute(query, tuple(parameters))
+        # Commit the transaction
+        conn.commit()
+    
+    # Build the SQL query dynamically based on provided values (libro)
+    query = 'UPDATE libro SET '
+    parameters = []
+    
+    if data.get('editorial') is not None:
+        query += 'editorial = %s, '
+        parameters.append(data.get('editorial'))
+
+    if data.get('numPaginas') is not None:
+        query += 'numPaginas = %s, '
+        parameters.append(data.get('numPaginas'))
+
+    if data.get('estilo') is not None:
+        query += 'estilo = %s, '
+        parameters.append(data.get('estilo'))
+
+    if data.get('sinopsis') is not None:
+        query += 'sinopsis = %s, '
+        parameters.append(data.get('sinopsis'))
+
+    if data.get('idAutor') is not None:
+        query += 'idAutor = %s, '
+        parameters.append(data.get('idAutor'))
+    
+    # Execute the dynamically built query with parameters
+    if parameters:
+        # Remove the trailing comma and space
+        query = query.rstrip(', ')
+        # Add the WHERE clause for the specific book_id
+        query += ' WHERE id = %s RETURNING id;'
+        parameters.append(id)
+        cur.execute(query, tuple(parameters))
+        # Commit the transaction
+        conn.commit()
+    
+    cur.execute('SELECT * FROM articulo INNER JOIN libro ON articulo.id = libro.idarticulo WHERE id = %s;',(id,))
+    book = cur.fetchone()
+    
+    # Commit the transaction
+    conn.commit()
+   
+   # Disconnect from DB
+    cur.close()
+    conn.close()
+    
+    # Return results
+    return jsonify({'id': book[0],
+                     'tipo': book[1],
+                     'titulo': book[2],
+                     'subtitulo': book[3],
+                     'fchPublicacion': book[4],
+                     'portada': base64.b64encode(book[5]).decode('utf-8') if book[5] else None,
+                     'stock': book[6],
+                     'disponible': book[7],
+                     'editorial': book[9],
+                     'numPaginas': book[10],
+                     'estilo': book[11],
+                     'sinopsis': book[12],
+                     'idAutor': book[13]}), 200
