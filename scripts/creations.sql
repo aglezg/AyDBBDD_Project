@@ -583,7 +583,12 @@ $$ LANGUAGE plpgsql;
 -- Función que aumenta el campo 'stock' de un artículo en 1 unidad
 CREATE OR REPLACE FUNCTION aumenta_articulo_stock() RETURNS TRIGGER AS $$
   BEGIN
-    IF OLD.vigente = TRUE AND (NEW.vigente = FALSE OR NEW.vigente == NULL) THEN
+    IF TG_OP = 'UPDATE' AND OLD.vigente = TRUE AND (NEW.vigente = FALSE) THEN
+      UPDATE articulo
+      SET stock = stock + 1
+      WHERE id = OLD.idArticulo;
+    END IF;
+    IF TG_OP = 'DELETE' AND OLD.vigente = TRUE THEN
       UPDATE articulo
       SET stock = stock + 1
       WHERE id = OLD.idArticulo;
