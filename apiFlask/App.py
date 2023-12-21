@@ -167,7 +167,23 @@ def deleteAdultUserByDNI(dni):
     from adultUsers import removeUserByDNI
     return removeUserByDNI(dni)
 
+# Minor Users routes
 
+@app.route('/mylibrary/usuarioMenor', methods=['GET'])
+def getAllMinorUsers():
+    from minorUser import returnMinorsUsers
+    return returnMinorsUsers()
+
+
+@app.route('/mylibrary/usuarioMenor/id/<int:id>', methods=['GET'])
+def getAllMinorByID(id):
+    from minorUser import returnMinorsUsersByID
+    return returnMinorsUsersByID(id)
+
+@app.route('/mylibrary/usuarioMenor/id_TarjetaSocio/<int:idTarjeta>', methods=['GET'])
+def get(idTarjeta):
+    from minorUser import returnMinorsUsersByIDTarjeta
+    return returnMinorsUsersByIDTarjeta(id)
 
 # Delivery routes
 @app.route('/mylibrary/prestaciones', methods=['GET'])
@@ -204,36 +220,6 @@ def patchADeliveryReturnDate(id):
 
 
 # Get all adult-users
-
-# Get all minor-users
-@app.route('/mylibrary/minor_users', methods=['GET'])
-def getAllMinorUsers():
-
-    # Connect to DB
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Execute queries
-    cur.execute('SELECT * FROM usuariomenor;',)
-    minor_users = cur.fetchall()
-
-    # Convert to JSON format
-    minor_users_list = [{'id': row[0],
-                     'nombre': row[1],
-                     'apellido1': row[2],
-                     'apellido2': row[3],
-                     'fecha_nacimiento': row[4],
-                     'fecha_hora_registro': row[5],
-                     'sexo': row[6],
-                     'edad': row[7],
-                     'id_tarjeta_socio': row[8]} for row in minor_users]
-
-    # Disconnect from DB
-    cur.close()
-    conn.close()
-
-    # Return results
-    return jsonify(minor_users_list)
 
 # Get an minor-user by id
 @app.route('/mylibrary/minor_users/<int:id>', methods=['GET'])

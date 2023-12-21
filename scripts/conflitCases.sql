@@ -165,4 +165,14 @@ VALUES
   (10, '78901234D', NULL, 2),
   (11, '78901234D', NULL, NULL);
 
-  -- probar trigger de hoario para que no hayan dos periodos para un mismo trabajador que no hayan finalizado ('34567890F', '2022-06-01', NULL),('34567890F', '2022-06-01', NULL),
+-- Tras crear una prestacion el stock del articulo disminuye
+SELECT id, stock FROM articulo WHERE id = 21;
+INSERT INTO prestacion (idArticulo, dniTrabajador, idUsuarioAdulto, idUsuarioMenor, fchDevolucion) 
+VALUES 
+  (21, '12345678A', 2, NULL, NULL);
+SELECT id, stock FROM articulo WHERE id = 21;
+
+-- Tras devolver una prestacion el stock del articulo aumenta
+SELECT id, stock FROM articulo WHERE id = 21;
+UPDATE prestacion SET fchdevolucion = '2023-12-28' WHERE idArticulo = 21;
+SELECT id, stock FROM articulo WHERE id = 21;
