@@ -131,6 +131,43 @@ def getWorkerByDNI(dni):
     from workers import returnWorkerByDNI
     return returnWorkerByDNI(dni)
 
+# Adult Users
+@app.route('/mylibrary/usuarioAdulto', methods=['GET'])
+def getAllAdultUsers():
+    from adultUsers import returnAllAdultUsers
+    return returnAllAdultUsers()
+
+@app.route('/mylibrary/usuarioAdulto/id/<int:id>', methods=['GET'])
+def getAdultUserByID(id):
+    from adultUsers import returnUserByID
+    return returnUserByID(id)
+
+@app.route('/mylibrary/usuarioAdulto/dni/<string:dni>', methods=['GET'])
+def getAdultUserByDNI(dni):
+    from adultUsers import returnUserByDNI
+    return returnUserByDNI(dni)
+
+@app.route('/mylibrary/usuarioAdulto', methods=['POST'])
+def postAdultUser():
+    from adultUsers import createUser
+    return createUser()
+
+@app.route('/mylibrary/usuarioAdulto/id/<int:id>', methods=['PATCH'])
+def patchAdultUser(id):
+    from adultUsers import updateUser
+    return updateUser(id)
+
+@app.route('/mylibrary/usuarioAdulto/id/<int:id>', methods=['DELETE'])
+def deleteAdultUser(id):
+    from adultUsers import removeAdultUser
+    return removeAdultUser(id)
+
+@app.route('/mylibrary/usuarioAdulto/dni/<string:dni>', methods=['DELETE'])
+def deleteAdultUserByDNI(dni):
+    from adultUsers import removeUserByDNI
+    return removeUserByDNI(dni)
+
+
 
 # Delivery routes
 @app.route('/mylibrary/prestaciones', methods=['GET'])
@@ -167,68 +204,6 @@ def patchADeliveryReturnDate(id):
 
 
 # Get all adult-users
-@app.route('/mylibrary/adult_users', methods=['GET'])
-def getAllAdultUsers():
-
-    # Connect to DB
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Execute queries
-    cur.execute('SELECT * FROM usuarioadulto;',)
-    workers = cur.fetchall()
-
-    # Convert to JSON format
-    adult_users_list = [{'id': row[0],
-                     'nombre': row[1],
-                     'apellido1': row[2],
-                     'apellido2': row[3],
-                     'fecha_nacimiento': row[4],
-                     'fecha_hora_registro': row[5],
-                     'sexo': row[6],
-                     'edad': row[7],
-                     'dni': row[8],
-                     'estudiante': row[9]} for row in workers]
-
-    # Disconnect from DB
-    cur.close()
-    conn.close()
-
-    # Return results
-    return jsonify(adult_users_list)
-
-# Get an adult-user by id
-@app.route('/mylibrary/adult_users/<int:id>', methods=['GET'])
-def getAdultUserByID(id):
-
-    # Connect to DB
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Execute queries
-    cur.execute('SELECT * FROM usuarioadulto WHERE id = %s;',(id,))
-    adult_user = cur.fetchone()
-
-    # Disconnect from DB
-    cur.close()
-    conn.close()
-
-    # Check if worker is not found
-    if adult_user is None:
-        return jsonify({'error': f'Adult user with ID {id} not found'}), 404
-
-    # Return results
-    return jsonify({'id': adult_user[0],
-                     'nombre': adult_user[1],
-                     'apellido1': adult_user[2],
-                     'apellido2': adult_user[3],
-                     'fecha_nacimiento': adult_user[4],
-                     'fecha_hora_registro': adult_user[5],
-                     'sexo': adult_user[6],
-                     'edad': adult_user[7],
-                     'dni': adult_user[8],
-                     'estudiante': adult_user[9]})
-
 
 # Get all minor-users
 @app.route('/mylibrary/minor_users', methods=['GET'])
