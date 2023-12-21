@@ -10,7 +10,7 @@ def get_db_connection():
             host='localhost',
         	database='mylibrary',
 		    user='postgres',
-            password='1234')
+            password='adbd2324')
     return conn
 
 # Default route
@@ -104,6 +104,21 @@ def deleteABook(id):
     from books import removeBookByID
     return removeBookByID(id)
 
+# Newspapers routes
+@app.route('/mylibrary/articulos/newspapers', methods=['GET'])
+def getAllNewspapers():
+    from newspapers import returnAllNewspapers
+    return returnAllNewspapers()
+
+@app.route('/mylibrary/articulos/newspapers/id/<int:id>', methods=['GET'])
+def getNewspaperByID(id):
+    from newspapers import returnNewspaperByID
+    return returnNewspaperByID(id)
+
+@app.route('/mylibrary/articulos/newspapers/titulo/<string:title>', methods=['GET'])
+def getNewspaperByTitle(title):
+    from newspapers import returnNewspaperByTitle
+    return returnNewspaperByTitle(title)
 
 # Workers routes
 @app.route('/mylibrary/trabajadores', methods=['GET'])
