@@ -86,7 +86,7 @@ EXECUTE FUNCTION actualiza_edad();
 
 -- Tabla de libros
 CREATE TABLE libro (
-  idArticulo INT REFERENCES articulo(id) ON UPDATE ON DELETE CASCADE,
+  idArticulo INT REFERENCES articulo(id) ON UPDATE CASCADE ON DELETE CASCADE,
   editorial VARCHAR(50) NOT NULL,
   numPaginas INT NOT NULL CHECK (numPaginas > 0),
   estilo VARCHAR(9) NOT NULL CHECK (estilo IN ('Narrativo', 'Poetico', 'Dramatico', 'Epico', 'Lirico', 'Didactico', 'Satirico')),
