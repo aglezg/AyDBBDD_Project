@@ -181,9 +181,32 @@ def getAllMinorByID(id):
     return returnMinorsUsersByID(id)
 
 @app.route('/mylibrary/usuarioMenor/id_TarjetaSocio/<int:idTarjeta>', methods=['GET'])
-def get(idTarjeta):
+def getUserByIDCard(idTarjeta):
     from minorUser import returnMinorsUsersByIDTarjeta
-    return returnMinorsUsersByIDTarjeta(id)
+    return returnMinorsUsersByIDTarjeta(idTarjeta)
+
+@app.route('/mylibrary/usuarioMenor', methods=['POST'])
+def postMinorUser():
+    from minorUser import createMinorUser
+    return createMinorUser()
+
+@app.route('/mylibrary/usuarioMenor/id/<int:id>', methods=['PATCH'])
+def patchMinorUser(id):
+    from minorUser import updateMinorUser
+    return updateMinorUser(id)
+
+@app.route('/mylibrary/usuarioMenor/id/<int:id>', methods=['DELETE'])
+def deleteMinorUser(id):
+    from minorUser import removeMinorUser
+    return removeMinorUser(id)
+
+@app.route('/mylibrary/usuarioMenor/idTarjeta/<int:idTarjeta>', methods=['DELETE'])
+def deleteMinorUserByCardID(idTarjeta):
+    from minorUser import removeMinorUserByCardID
+    return removeMinorUserByCardID(idTarjeta)
+
+
+
 
 # Delivery routes
 @app.route('/mylibrary/prestaciones', methods=['GET'])
@@ -219,39 +242,8 @@ def patchADeliveryReturnDate(id):
 
 
 
-# Get all adult-users
 
-# Get an minor-user by id
-@app.route('/mylibrary/minor_users/<int:id>', methods=['GET'])
-def getMinorUserByID(id):
-
-    # Connect to DB
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Execute queries
-    cur.execute('SELECT * FROM usuariomenor WHERE id = %s;',(id,))
-    minor_user = cur.fetchone()
-
-    # Disconnect from DB
-    cur.close()
-    conn.close()
-
-    # Check if worker is not found
-    if minor_user is None:
-        return jsonify({'error': f'Minor user with ID {id} not found'}), 404
-
-    # Return results
-    return jsonify({'id': minor_user[0],
-                     'nombre': minor_user[1],
-                     'apellido1': minor_user[2],
-                     'apellido2': minor_user[3],
-                     'fecha_nacimiento': minor_user[4],
-                     'fecha_hora_registro': minor_user[5],
-                     'sexo': minor_user[6],
-                     'edad': minor_user[7],
-                     'id_tarjeta_socio': minor_user[8]})
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=8080)
